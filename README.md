@@ -76,9 +76,16 @@ SetColor(c color.Color)
 SetHexColor(x string)
 ```
 
-## Transformation Functions
+## Stroke & Fill Options
 
-All the usual matrix transformations are available too.
+```go
+SetLineWidth(lineWidth float64)
+SetLineCap(lineCap LineCap)
+SetLineJoin(lineJoin LineJoin)
+SetFillRule(fillRule FillRule)
+```
+
+## Transformation Functions
 
 ```go
 Identity()
