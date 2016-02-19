@@ -376,33 +376,14 @@ func (dc *Context) TransformPoint(x, y float64) (tx, ty float64) {
 // Stack
 
 func (dc *Context) Push() {
-	path := make(raster.Path, len(dc.path))
-	copy(path, dc.path)
-	dc.stack = append(dc.stack, &Context{
-		color:      dc.color,
-		path:       path,
-		start:      dc.start,
-		lineWidth:  dc.lineWidth,
-		lineCap:    dc.lineCap,
-		lineJoin:   dc.lineJoin,
-		fillRule:   dc.fillRule,
-		fontFace:   dc.fontFace,
-		fontHeight: dc.fontHeight,
-		matrix:     dc.matrix,
-	})
+	x := *dc
+	x.path = make(raster.Path, len(dc.path))
+	copy(x.path, dc.path)
+	dc.stack = append(dc.stack, &x)
 }
 
 func (dc *Context) Pop() {
 	s := dc.stack
 	x, s := s[len(s)-1], s[:len(s)-1]
-	dc.color = x.color
-	dc.path = x.path
-	dc.start = x.start
-	dc.lineWidth = x.lineWidth
-	dc.lineCap = x.lineCap
-	dc.lineJoin = x.lineJoin
-	dc.fillRule = x.fillRule
-	dc.fontFace = x.fontFace
-	dc.fontHeight = x.fontHeight
-	dc.matrix = x.matrix
+	*dc = *x
 }
