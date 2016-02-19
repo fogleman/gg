@@ -35,19 +35,20 @@ const (
 )
 
 type Context struct {
-	width     int
-	height    int
-	im        *image.RGBA
-	color     color.Color
-	path      raster.Path
-	start     fixed.Point26_6
-	lineWidth float64
-	lineCap   LineCap
-	lineJoin  LineJoin
-	fillRule  FillRule
-	fontFace  font.Face
-	matrix    Matrix
-	stack     []*Context
+	width      int
+	height     int
+	im         *image.RGBA
+	color      color.Color
+	path       raster.Path
+	start      fixed.Point26_6
+	lineWidth  float64
+	lineCap    LineCap
+	lineJoin   LineJoin
+	fillRule   FillRule
+	fontFace   font.Face
+	fontHeight float64
+	matrix     Matrix
+	stack      []*Context
 }
 
 func NewContext(width, height int) *Context {
@@ -60,14 +61,15 @@ func NewContextForImage(im image.Image) *Context {
 
 func NewContextForRGBA(im *image.RGBA) *Context {
 	return &Context{
-		width:     im.Bounds().Size().X,
-		height:    im.Bounds().Size().Y,
-		im:        im,
-		color:     color.Transparent,
-		lineWidth: 1,
-		fillRule:  FillRuleWinding,
-		fontFace:  basicfont.Face7x13,
-		matrix:    Identity(),
+		width:      im.Bounds().Size().X,
+		height:     im.Bounds().Size().Y,
+		im:         im,
+		color:      color.Transparent,
+		lineWidth:  1,
+		fillRule:   FillRuleWinding,
+		fontFace:   basicfont.Face7x13,
+		fontHeight: 13,
+		matrix:     Identity(),
 	}
 }
 
@@ -315,8 +317,9 @@ func (dc *Context) SetFontFace(fontFace font.Face) {
 	dc.fontFace = fontFace
 }
 
-func (dc *Context) LoadFontFace(path string, size float64) {
-	dc.fontFace = loadFontFace(path, size)
+func (dc *Context) LoadFontFace(path string, points float64) {
+	dc.fontFace = loadFontFace(path, points)
+	dc.fontHeight = points * 72 / 96
 }
 
 func (dc *Context) DrawString(x, y float64, s string) {
@@ -330,14 +333,14 @@ func (dc *Context) DrawString(x, y float64, s string) {
 	d.DrawString(s)
 }
 
-func (dc *Context) MeasureString(s string) float64 {
+func (dc *Context) MeasureString(s string) (w, h float64) {
 	d := &font.Drawer{
 		Dst:  nil,
 		Src:  nil,
 		Face: dc.fontFace,
 	}
 	a := d.MeasureString(s)
-	return float64(a >> 6)
+	return float64(a >> 6), dc.fontHeight
 }
 
 // Transformation Matrix Operations
@@ -376,15 +379,16 @@ func (dc *Context) Push() {
 	path := make(raster.Path, len(dc.path))
 	copy(path, dc.path)
 	dc.stack = append(dc.stack, &Context{
-		color:     dc.color,
-		path:      path,
-		start:     dc.start,
-		lineWidth: dc.lineWidth,
-		lineCap:   dc.lineCap,
-		lineJoin:  dc.lineJoin,
-		fillRule:  dc.fillRule,
-		fontFace:  dc.fontFace,
-		matrix:    dc.matrix,
+		color:      dc.color,
+		path:       path,
+		start:      dc.start,
+		lineWidth:  dc.lineWidth,
+		lineCap:    dc.lineCap,
+		lineJoin:   dc.lineJoin,
+		fillRule:   dc.fillRule,
+		fontFace:   dc.fontFace,
+		fontHeight: dc.fontHeight,
+		matrix:     dc.matrix,
 	})
 }
 
@@ -399,5 +403,6 @@ func (dc *Context) Pop() {
 	dc.lineJoin = x.lineJoin
 	dc.fillRule = x.fillRule
 	dc.fontFace = x.fontFace
+	dc.fontHeight = x.fontHeight
 	dc.matrix = x.matrix
 }

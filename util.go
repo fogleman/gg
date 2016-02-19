@@ -72,7 +72,7 @@ func fi(x float64) fixed.Int26_6 {
 	return fixed.Int26_6(x * 64)
 }
 
-func loadFontFace(path string, size float64) font.Face {
+func loadFontFace(path string, points float64) font.Face {
 	fontBytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		panic(err)
@@ -82,7 +82,7 @@ func loadFontFace(path string, size float64) font.Face {
 		panic(err)
 	}
 	return truetype.NewFace(f, &truetype.Options{
-		Size:    size,
+		Size:    points,
 		Hinting: font.HintingFull,
 	})
 }
