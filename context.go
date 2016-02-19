@@ -42,17 +42,24 @@ type Context struct {
 	path      raster.Path
 	start     fixed.Point26_6
 	lineWidth float64
-	capper    raster.Capper
-	joiner    raster.Joiner
+	lineCap   LineCap
+	lineJoin  LineJoin
 	fillRule  FillRule
 	fontFace  font.Face
 }
 
 func NewContext(width, height int) *Context {
-	im := image.NewRGBA(image.Rect(0, 0, width, height))
+	return NewContextForRGBA(image.NewRGBA(image.Rect(0, 0, width, height)))
+}
+
+func NewContextForImage(im image.Image) *Context {
+	return NewContextForRGBA(imageToRGBA(im))
+}
+
+func NewContextForRGBA(im *image.RGBA) *Context {
 	return &Context{
-		width:     width,
-		height:    height,
+		width:     im.Bounds().Size().X,
+		height:    im.Bounds().Size().Y,
 		im:        im,
 		color:     color.Transparent,
 		lineWidth: 1,
@@ -77,11 +84,42 @@ func (dc *Context) WriteToPNG(path string) error {
 	return writeToPNG(path, dc.im)
 }
 
-func (dc *Context) Paint() {
-	draw.Draw(dc.im, dc.im.Bounds(), image.NewUniform(dc.color), image.ZP, draw.Src)
+func (dc *Context) SetLineWidth(lineWidth float64) {
+	dc.lineWidth = lineWidth
 }
 
-func (dc *Context) SetSourceRGBA(r, g, b, a float64) {
+func (dc *Context) SetLineCap(lineCap LineCap) {
+	dc.lineCap = lineCap
+}
+
+func (dc *Context) SetLineJoin(lineJoin LineJoin) {
+	dc.lineJoin = lineJoin
+}
+
+func (dc *Context) SetFillRule(fillRule FillRule) {
+	dc.fillRule = fillRule
+}
+
+// Color Setters
+
+func (dc *Context) SetColor(c color.Color) {
+	dc.color = c
+}
+
+func (dc *Context) SetHexColor(x string) {
+	r, g, b := parseHexColor(x)
+	dc.SetRGB255(r, g, b)
+}
+
+func (dc *Context) SetRGBA255(r, g, b, a int) {
+	dc.color = color.NRGBA{uint8(r), uint8(g), uint8(b), uint8(a)}
+}
+
+func (dc *Context) SetRGB255(r, g, b int) {
+	dc.SetRGBA255(r, g, b, 255)
+}
+
+func (dc *Context) SetRGBA(r, g, b, a float64) {
 	dc.color = color.NRGBA{
 		uint8(r * 255),
 		uint8(g * 255),
@@ -90,37 +128,11 @@ func (dc *Context) SetSourceRGBA(r, g, b, a float64) {
 	}
 }
 
-func (dc *Context) SetSourceRGB(r, g, b float64) {
-	dc.SetSourceRGBA(r, g, b, 1)
+func (dc *Context) SetRGB(r, g, b float64) {
+	dc.SetRGBA(r, g, b, 1)
 }
 
-func (dc *Context) SetLineWidth(lineWidth float64) {
-	dc.lineWidth = lineWidth
-}
-
-func (dc *Context) SetLineCap(lineCap LineCap) {
-	switch lineCap {
-	case LineCapButt:
-		dc.capper = raster.ButtCapper
-	case LineCapRound:
-		dc.capper = raster.RoundCapper
-	case LineCapSquare:
-		dc.capper = raster.SquareCapper
-	}
-}
-
-func (dc *Context) SetLineJoin(lineJoin LineJoin) {
-	switch lineJoin {
-	case LineJoinBevel:
-		dc.joiner = raster.BevelJoiner
-	case LineJoinRound:
-		dc.joiner = raster.RoundJoiner
-	}
-}
-
-func (dc *Context) SetFillRule(fillRule FillRule) {
-	dc.fillRule = fillRule
-}
+// Path Manipulation
 
 func (dc *Context) MoveTo(x, y float64) {
 	dc.start = fp(x, y)
@@ -149,22 +161,40 @@ func (dc *Context) ClosePath() {
 	}
 }
 
-func (dc *Context) NewPath() {
+func (dc *Context) ClearPath() {
 	dc.path.Clear()
 }
 
+// Path Drawing
+
 func (dc *Context) StrokePreserve() {
+	var capper raster.Capper
+	switch dc.lineCap {
+	case LineCapButt:
+		capper = raster.ButtCapper
+	case LineCapRound:
+		capper = raster.RoundCapper
+	case LineCapSquare:
+		capper = raster.SquareCapper
+	}
+	var joiner raster.Joiner
+	switch dc.lineJoin {
+	case LineJoinBevel:
+		joiner = raster.BevelJoiner
+	case LineJoinRound:
+		joiner = raster.RoundJoiner
+	}
 	painter := raster.NewRGBAPainter(dc.im)
 	painter.SetColor(dc.color)
 	r := raster.NewRasterizer(dc.width, dc.height)
 	r.UseNonZeroWinding = true
-	r.AddStroke(dc.path, fi(dc.lineWidth), dc.capper, dc.joiner)
+	r.AddStroke(dc.path, fi(dc.lineWidth), capper, joiner)
 	r.Rasterize(painter)
 }
 
 func (dc *Context) Stroke() {
 	dc.StrokePreserve()
-	dc.NewPath()
+	dc.ClearPath()
 }
 
 func (dc *Context) FillPreserve() {
@@ -182,17 +212,29 @@ func (dc *Context) FillPreserve() {
 
 func (dc *Context) Fill() {
 	dc.FillPreserve()
-	dc.NewPath()
+	dc.ClearPath()
 }
 
 // Convenient Drawing Functions
+
+func (dc *Context) Clear() {
+	draw.Draw(dc.im, dc.im.Bounds(), image.NewUniform(dc.color), image.ZP, draw.Src)
+}
 
 func (dc *Context) DrawLine(x1, y1, x2, y2 float64) {
 	dc.MoveTo(x1, y1)
 	dc.LineTo(x2, y2)
 }
 
-func (dc *Context) DrawEllipseArc(x, y, rx, ry, angle1, angle2 float64) {
+func (dc *Context) DrawRectangle(x, y, w, h float64) {
+	dc.MoveTo(x, y)
+	dc.LineTo(x+w, y)
+	dc.LineTo(x+w, y+h)
+	dc.LineTo(x, y+h)
+	dc.LineTo(x, y)
+}
+
+func (dc *Context) DrawEllipticalArc(x, y, rx, ry, angle1, angle2 float64) {
 	const n = 16
 	for i := 0; i <= n; i++ {
 		p1 := float64(i+0) / n
@@ -215,15 +257,15 @@ func (dc *Context) DrawEllipseArc(x, y, rx, ry, angle1, angle2 float64) {
 }
 
 func (dc *Context) DrawEllipse(x, y, rx, ry float64) {
-	dc.DrawEllipseArc(x, y, rx, ry, 0, 2*math.Pi)
+	dc.DrawEllipticalArc(x, y, rx, ry, 0, 2*math.Pi)
 }
 
 func (dc *Context) DrawArc(x, y, r, angle1, angle2 float64) {
-	dc.DrawEllipseArc(x, y, r, r, angle1, angle2)
+	dc.DrawEllipticalArc(x, y, r, r, angle1, angle2)
 }
 
 func (dc *Context) DrawCircle(x, y, r float64) {
-	dc.DrawEllipseArc(x, y, r, r, 0, 2*math.Pi)
+	dc.DrawEllipticalArc(x, y, r, r, 0, 2*math.Pi)
 }
 
 // Text Functions

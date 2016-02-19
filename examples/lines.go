@@ -10,8 +10,8 @@ func main() {
 	const W = 1024
 	const H = 1024
 	dc := gg.NewContext(W, H)
-	dc.SetSourceRGB(0, 0, 0)
-	dc.Paint()
+	dc.SetRGB(0, 0, 0)
+	dc.Clear()
 	for i := 0; i < 1000; i++ {
 		x1 := rand.Float64() * W
 		y1 := rand.Float64() * H
@@ -22,10 +22,10 @@ func main() {
 		b := rand.Float64()
 		a := rand.Float64()*0.5 + 0.5
 		w := rand.Float64()*4 + 1
-		dc.SetSourceRGBA(r, g, b, a)
+		dc.SetRGBA(r, g, b, a)
 		dc.SetLineWidth(w)
-		dc.Stroke()
 		dc.DrawLine(x1, y1, x2, y2)
+		dc.Stroke()
 	}
 	dc.WriteToPNG("out.png")
 }

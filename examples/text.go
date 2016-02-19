@@ -4,9 +4,9 @@ import "github.com/fogleman/gg"
 
 func main() {
 	dc := gg.NewContext(1000, 1000)
-	dc.SetSourceRGB(1, 1, 1)
-	dc.Paint()
-	dc.SetSourceRGB(0, 0, 0)
+	dc.SetRGB(1, 1, 1)
+	dc.Clear()
+	dc.SetRGB(0, 0, 0)
 	dc.LoadFontFace("/Library/Fonts/Impact.ttf", 96)
 	s := "Hello, world!"
 	w := dc.MeasureString(s)
