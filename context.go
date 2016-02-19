@@ -7,6 +7,8 @@ import (
 	"math"
 
 	"github.com/golang/freetype/raster"
+	"golang.org/x/image/font"
+	"golang.org/x/image/font/basicfont"
 	"golang.org/x/image/math/fixed"
 )
 
@@ -43,6 +45,7 @@ type Context struct {
 	capper    raster.Capper
 	joiner    raster.Joiner
 	fillRule  FillRule
+	fontFace  font.Face
 }
 
 func NewContext(width, height int) *Context {
@@ -54,6 +57,7 @@ func NewContext(width, height int) *Context {
 		color:     color.Transparent,
 		lineWidth: 1,
 		fillRule:  FillRuleWinding,
+		fontFace:  basicfont.Face7x13,
 	}
 }
 
@@ -181,6 +185,8 @@ func (dc *Context) Fill() {
 	dc.NewPath()
 }
 
+// Convenient Drawing Functions
+
 func (dc *Context) DrawLine(x1, y1, x2, y2 float64) {
 	dc.MoveTo(x1, y1)
 	dc.LineTo(x2, y2)
@@ -218,4 +224,34 @@ func (dc *Context) DrawArc(x, y, r, angle1, angle2 float64) {
 
 func (dc *Context) DrawCircle(x, y, r float64) {
 	dc.DrawEllipseArc(x, y, r, r, 0, 2*math.Pi)
+}
+
+// Text Functions
+
+func (dc *Context) SetFontFace(fontFace font.Face) {
+	dc.fontFace = fontFace
+}
+
+func (dc *Context) LoadFontFace(path string, size float64) {
+	dc.fontFace = loadFontFace(path, size)
+}
+
+func (dc *Context) DrawString(x, y float64, s string) {
+	d := &font.Drawer{
+		Dst:  dc.im,
+		Src:  image.NewUniform(dc.color),
+		Face: dc.fontFace,
+		Dot:  fp(x, y),
+	}
+	d.DrawString(s)
+}
+
+func (dc *Context) MeasureString(s string) float64 {
+	d := &font.Drawer{
+		Dst:  nil,
+		Src:  nil,
+		Face: dc.fontFace,
+	}
+	a := d.MeasureString(s)
+	return float64(a >> 6)
 }
