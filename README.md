@@ -25,6 +25,16 @@ func main() {
 }
 ```
 
+## Creating Contexts
+
+There are a few ways of creating a context.
+
+```go
+NewContext(width, height int) *Context
+NewContextForImage(im image.Image) *Context
+NewContextForRGBA(im *image.RGBA) *Context
+```
+
 ## Drawing Functions
 
 Ever used a graphics library that didn't have functions for drawing rectangles
@@ -80,6 +90,17 @@ Shear(x, y float64)
 TransformPoint(x, y float64) (tx, ty float64)
 Push()
 Pop()
+```
+
+## Helper Functions
+
+Sometimes you just don't want to write these yourself.
+
+```go
+Radians(degrees float64) float64
+Degrees(radians float64) float64
+LoadPNG(path string) (image.Image, error)
+SavePNG(path string, im image.Image) error
 ```
 
 ## What's Missing?
