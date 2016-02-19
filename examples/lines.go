@@ -3,13 +3,13 @@ package main
 import (
 	"math/rand"
 
-	"github.com/fogleman/dd"
+	"github.com/fogleman/gg"
 )
 
 func main() {
 	const W = 1024
 	const H = 1024
-	dc := dd.NewContext(W, H)
+	dc := gg.NewContext(W, H)
 	dc.SetSourceRGB(0, 0, 0)
 	dc.Paint()
 	for i := 0; i < 1000; i++ {

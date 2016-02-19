@@ -1,9 +1,9 @@
 package main
 
-import "github.com/fogleman/dd"
+import "github.com/fogleman/gg"
 
 func main() {
-	dc := dd.NewContext(1000, 1000)
+	dc := gg.NewContext(1000, 1000)
 	dc.SetSourceRGB(1, 1, 1)
 	dc.Paint()
 	dc.DrawCircle(500, 500, 400)

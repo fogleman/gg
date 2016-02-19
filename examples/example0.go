@@ -1,9 +1,9 @@
 package main
 
-import "github.com/fogleman/dd"
+import "github.com/fogleman/gg"
 
 func main() {
-	dc := dd.NewContext(256, 256)
+	dc := gg.NewContext(256, 256)
 	dc.SetSourceRGBA(1, 0, 0, 0.3)
 	dc.Paint()
 	dc.MoveTo(20, 20)
