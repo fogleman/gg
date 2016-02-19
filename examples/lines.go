@@ -1,0 +1,31 @@
+package main
+
+import (
+	"math/rand"
+
+	"github.com/fogleman/dd"
+)
+
+func main() {
+	const W = 1024
+	const H = 1024
+	dc := dd.NewContext(W, H)
+	dc.SetSourceRGB(0, 0, 0)
+	dc.Paint()
+	for i := 0; i < 1000; i++ {
+		x1 := rand.Float64() * W
+		y1 := rand.Float64() * H
+		x2 := rand.Float64() * W
+		y2 := rand.Float64() * H
+		r := rand.Float64()
+		g := rand.Float64()
+		b := rand.Float64()
+		a := rand.Float64()*0.5 + 0.5
+		w := rand.Float64()*4 + 1
+		dc.SetSourceRGBA(r, g, b, a)
+		dc.SetLineWidth(w)
+		dc.Stroke()
+		dc.DrawLine(x1, y1, x2, y2)
+	}
+	dc.WriteToPNG("out.png")
+}
