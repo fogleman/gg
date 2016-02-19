@@ -33,10 +33,10 @@ or circles? What a pain!
 ```go
 DrawLine(x1, y1, x2, y2 float64)
 DrawRectangle(x, y, w, h float64)
-DrawEllipticalArc(x, y, rx, ry, angle1, angle2 float64)
-DrawEllipse(x, y, rx, ry float64)
-DrawArc(x, y, r, angle1, angle2 float64)
 DrawCircle(x, y, r float64)
+DrawArc(x, y, r, angle1, angle2 float64)
+DrawEllipse(x, y, rx, ry float64)
+DrawEllipticalArc(x, y, rx, ry, angle1, angle2 float64)
 DrawImage(im image.Image, x, y int)
 DrawString(x, y float64, s string)
 
@@ -58,12 +58,12 @@ FillPreserve()
 Colors can be set in several different ways for your convenience.
 
 ```go
+SetRGB(r, g, b float64)
+SetRGBA(r, g, b, a float64)
+SetRGB255(r, g, b int)
+SetRGBA255(r, g, b, a int)
 SetColor(c color.Color)
 SetHexColor(x string)
-SetRGBA255(r, g, b, a int)
-SetRGB255(r, g, b int)
-SetRGBA(r, g, b, a float64)
-SetRGB(r, g, b float64)
 ```
 
 ## Transformation Functions
@@ -81,3 +81,12 @@ TransformPoint(x, y float64) (tx, ty float64)
 Push()
 Pop()
 ```
+
+## What's Missing?
+
+If you need any of the features below, I recommend using `cairo` instead.
+
+- Clipping Regions
+- Gradients / Patterns
+- Cubic Beziers
+- Dashed Lines
