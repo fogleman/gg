@@ -41,10 +41,10 @@ func Rotate(angle float64) Matrix {
 }
 
 func RotateAbout(angle, x, y float64) Matrix {
-	a := Translate(x, y)
+	a := Translate(-x, -y)
 	b := Rotate(angle)
-	c := Translate(-x, -y)
-	return c.Multiply(b).Multiply(a)
+	c := Translate(x, y)
+	return a.Multiply(b).Multiply(c)
 }
 
 func Shear(x, y float64) Matrix {

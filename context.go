@@ -47,6 +47,7 @@ type Context struct {
 	fillRule  FillRule
 	fontFace  font.Face
 	matrix    Matrix
+	stack     []*Context
 }
 
 func NewContext(width, height int) *Context {
@@ -361,4 +362,36 @@ func (dc *Context) Shear(x, y float64) {
 
 func (dc *Context) TransformPoint(x, y float64) (tx, ty float64) {
 	return dc.matrix.TransformPoint(x, y)
+}
+
+// Stack
+
+func (dc *Context) Push() {
+	path := make(raster.Path, len(dc.path))
+	copy(path, dc.path)
+	dc.stack = append(dc.stack, &Context{
+		color:     dc.color,
+		path:      path,
+		start:     dc.start,
+		lineWidth: dc.lineWidth,
+		lineCap:   dc.lineCap,
+		lineJoin:  dc.lineJoin,
+		fillRule:  dc.fillRule,
+		fontFace:  dc.fontFace,
+		matrix:    dc.matrix,
+	})
+}
+
+func (dc *Context) Pop() {
+	s := dc.stack
+	x, s := s[len(s)-1], s[:len(s)-1]
+	dc.color = x.color
+	dc.path = x.path
+	dc.start = x.start
+	dc.lineWidth = x.lineWidth
+	dc.lineCap = x.lineCap
+	dc.lineJoin = x.lineJoin
+	dc.fillRule = x.fillRule
+	dc.fontFace = x.fontFace
+	dc.matrix = x.matrix
 }
