@@ -308,7 +308,7 @@ func (dc *Context) DrawCircle(x, y, r float64) {
 func (dc *Context) DrawImage(im image.Image, x, y int) {
 	p := image.Pt(x, y)
 	r := image.Rectangle{p, p.Add(im.Bounds().Size())}
-	draw.Draw(dc.im, r, im, image.ZP, draw.Src)
+	draw.Draw(dc.im, r, im, image.ZP, draw.Over)
 }
 
 // Text Functions
