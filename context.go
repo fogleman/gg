@@ -24,6 +24,13 @@ const (
 	LineJoinBevel
 )
 
+type FillRule int
+
+const (
+	FillRuleWinding FillRule = iota
+	FillRuleEvenOdd
+)
+
 type Context struct {
 	width     int
 	height    int
@@ -34,6 +41,7 @@ type Context struct {
 	lineWidth float64
 	capper    raster.Capper
 	joiner    raster.Joiner
+	fillRule  FillRule
 }
 
 func NewContext(width, height int) *Context {
@@ -44,6 +52,7 @@ func NewContext(width, height int) *Context {
 		im:        im,
 		color:     color.Transparent,
 		lineWidth: 1,
+		fillRule:  FillRuleWinding,
 	}
 }
 
@@ -104,21 +113,35 @@ func (c *Context) SetLineJoin(lineJoin LineJoin) {
 	}
 }
 
+func (c *Context) SetFillRule(fillRule FillRule) {
+	c.fillRule = fillRule
+}
+
 func (c *Context) MoveTo(x, y float64) {
 	c.start = fp(x, y)
 	c.path.Start(c.start)
 }
 
 func (c *Context) LineTo(x, y float64) {
-	c.path.Add1(fp(x, y))
+	if len(c.path) == 0 {
+		c.MoveTo(x, y)
+	} else {
+		c.path.Add1(fp(x, y))
+	}
 }
 
 func (c *Context) QuadraticTo(x1, y1, x2, y2 float64) {
-	c.path.Add2(fp(x1, y1), fp(x2, y2))
+	if len(c.path) == 0 {
+		c.MoveTo(x1, y1)
+	} else {
+		c.path.Add2(fp(x1, y1), fp(x2, y2))
+	}
 }
 
 func (c *Context) ClosePath() {
-	c.path.Add1(c.start)
+	if len(c.path) > 0 {
+		c.path.Add1(c.start)
+	}
 }
 
 func (c *Context) NewPath() {
@@ -147,6 +170,7 @@ func (c *Context) FillPreserve() {
 	painter := raster.NewRGBAPainter(c.im)
 	painter.SetColor(c.color)
 	r := raster.NewRasterizer(c.width, c.height)
+	r.UseNonZeroWinding = c.fillRule == FillRuleWinding
 	r.AddPath(path)
 	r.Rasterize(painter)
 }
