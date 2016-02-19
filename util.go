@@ -24,7 +24,16 @@ func Degrees(radians float64) float64 {
 	return radians * 180 / math.Pi
 }
 
-func writePNG(path string, im image.Image) error {
+func LoadPNG(path string) (image.Image, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	return png.Decode(file)
+}
+
+func SavePNG(path string, im image.Image) error {
 	file, err := os.Create(path)
 	if err != nil {
 		return err

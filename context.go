@@ -84,7 +84,7 @@ func (dc *Context) Height() int {
 }
 
 func (dc *Context) WritePNG(path string) error {
-	return writePNG(path, dc.im)
+	return SavePNG(path, dc.im)
 }
 
 func (dc *Context) SetLineWidth(lineWidth float64) {
@@ -301,6 +301,12 @@ func (dc *Context) DrawArc(x, y, r, angle1, angle2 float64) {
 
 func (dc *Context) DrawCircle(x, y, r float64) {
 	dc.DrawEllipticalArc(x, y, r, r, 0, 2*math.Pi)
+}
+
+func (dc *Context) DrawImage(im image.Image, x, y int) {
+	p := image.Pt(x, y)
+	r := image.Rectangle{p, p.Add(im.Bounds().Size())}
+	draw.Draw(dc.im, r, im, image.ZP, draw.Src)
 }
 
 // Text Functions
