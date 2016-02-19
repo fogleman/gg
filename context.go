@@ -4,6 +4,7 @@ import (
 	"image"
 	"image/color"
 	"image/draw"
+	"math"
 
 	"github.com/golang/freetype/raster"
 	"golang.org/x/image/math/fixed"
@@ -56,28 +57,28 @@ func NewContext(width, height int) *Context {
 	}
 }
 
-func (c *Context) Image() image.Image {
-	return c.im
+func (dc *Context) Image() image.Image {
+	return dc.im
 }
 
-func (c *Context) Width() int {
-	return c.width
+func (dc *Context) Width() int {
+	return dc.width
 }
 
-func (c *Context) Height() int {
-	return c.height
+func (dc *Context) Height() int {
+	return dc.height
 }
 
-func (c *Context) WriteToPNG(path string) error {
-	return writeToPNG(path, c.im)
+func (dc *Context) WriteToPNG(path string) error {
+	return writeToPNG(path, dc.im)
 }
 
-func (c *Context) Paint() {
-	draw.Draw(c.im, c.im.Bounds(), image.NewUniform(c.color), image.ZP, draw.Src)
+func (dc *Context) Paint() {
+	draw.Draw(dc.im, dc.im.Bounds(), image.NewUniform(dc.color), image.ZP, draw.Src)
 }
 
-func (c *Context) SetSourceRGBA(r, g, b, a float64) {
-	c.color = color.NRGBA{
+func (dc *Context) SetSourceRGBA(r, g, b, a float64) {
+	dc.color = color.NRGBA{
 		uint8(r * 255),
 		uint8(g * 255),
 		uint8(b * 255),
@@ -85,97 +86,136 @@ func (c *Context) SetSourceRGBA(r, g, b, a float64) {
 	}
 }
 
-func (c *Context) SetSourceRGB(r, g, b float64) {
-	c.SetSourceRGBA(r, g, b, 1)
+func (dc *Context) SetSourceRGB(r, g, b float64) {
+	dc.SetSourceRGBA(r, g, b, 1)
 }
 
-func (c *Context) SetLineWidth(lineWidth float64) {
-	c.lineWidth = lineWidth
+func (dc *Context) SetLineWidth(lineWidth float64) {
+	dc.lineWidth = lineWidth
 }
 
-func (c *Context) SetLineCap(lineCap LineCap) {
+func (dc *Context) SetLineCap(lineCap LineCap) {
 	switch lineCap {
 	case LineCapButt:
-		c.capper = raster.ButtCapper
+		dc.capper = raster.ButtCapper
 	case LineCapRound:
-		c.capper = raster.RoundCapper
+		dc.capper = raster.RoundCapper
 	case LineCapSquare:
-		c.capper = raster.SquareCapper
+		dc.capper = raster.SquareCapper
 	}
 }
 
-func (c *Context) SetLineJoin(lineJoin LineJoin) {
+func (dc *Context) SetLineJoin(lineJoin LineJoin) {
 	switch lineJoin {
 	case LineJoinBevel:
-		c.joiner = raster.BevelJoiner
+		dc.joiner = raster.BevelJoiner
 	case LineJoinRound:
-		c.joiner = raster.RoundJoiner
+		dc.joiner = raster.RoundJoiner
 	}
 }
 
-func (c *Context) SetFillRule(fillRule FillRule) {
-	c.fillRule = fillRule
+func (dc *Context) SetFillRule(fillRule FillRule) {
+	dc.fillRule = fillRule
 }
 
-func (c *Context) MoveTo(x, y float64) {
-	c.start = fp(x, y)
-	c.path.Start(c.start)
+func (dc *Context) MoveTo(x, y float64) {
+	dc.start = fp(x, y)
+	dc.path.Start(dc.start)
 }
 
-func (c *Context) LineTo(x, y float64) {
-	if len(c.path) == 0 {
-		c.MoveTo(x, y)
+func (dc *Context) LineTo(x, y float64) {
+	if len(dc.path) == 0 {
+		dc.MoveTo(x, y)
 	} else {
-		c.path.Add1(fp(x, y))
+		dc.path.Add1(fp(x, y))
 	}
 }
 
-func (c *Context) QuadraticTo(x1, y1, x2, y2 float64) {
-	if len(c.path) == 0 {
-		c.MoveTo(x1, y1)
+func (dc *Context) QuadraticTo(x1, y1, x2, y2 float64) {
+	if len(dc.path) == 0 {
+		dc.MoveTo(x1, y1)
 	} else {
-		c.path.Add2(fp(x1, y1), fp(x2, y2))
+		dc.path.Add2(fp(x1, y1), fp(x2, y2))
 	}
 }
 
-func (c *Context) ClosePath() {
-	if len(c.path) > 0 {
-		c.path.Add1(c.start)
+func (dc *Context) ClosePath() {
+	if len(dc.path) > 0 {
+		dc.path.Add1(dc.start)
 	}
 }
 
-func (c *Context) NewPath() {
-	c.path.Clear()
+func (dc *Context) NewPath() {
+	dc.path.Clear()
 }
 
-func (c *Context) StrokePreserve() {
-	painter := raster.NewRGBAPainter(c.im)
-	painter.SetColor(c.color)
-	r := raster.NewRasterizer(c.width, c.height)
+func (dc *Context) StrokePreserve() {
+	painter := raster.NewRGBAPainter(dc.im)
+	painter.SetColor(dc.color)
+	r := raster.NewRasterizer(dc.width, dc.height)
 	r.UseNonZeroWinding = true
-	r.AddStroke(c.path, fi(c.lineWidth), c.capper, c.joiner)
+	r.AddStroke(dc.path, fi(dc.lineWidth), dc.capper, dc.joiner)
 	r.Rasterize(painter)
 }
 
-func (c *Context) Stroke() {
-	c.StrokePreserve()
-	c.NewPath()
+func (dc *Context) Stroke() {
+	dc.StrokePreserve()
+	dc.NewPath()
 }
 
-func (c *Context) FillPreserve() {
+func (dc *Context) FillPreserve() {
 	// make sure the path is closed
-	path := make(raster.Path, len(c.path))
-	copy(path, c.path)
-	path.Add1(c.start)
-	painter := raster.NewRGBAPainter(c.im)
-	painter.SetColor(c.color)
-	r := raster.NewRasterizer(c.width, c.height)
-	r.UseNonZeroWinding = c.fillRule == FillRuleWinding
+	path := make(raster.Path, len(dc.path))
+	copy(path, dc.path)
+	path.Add1(dc.start)
+	painter := raster.NewRGBAPainter(dc.im)
+	painter.SetColor(dc.color)
+	r := raster.NewRasterizer(dc.width, dc.height)
+	r.UseNonZeroWinding = dc.fillRule == FillRuleWinding
 	r.AddPath(path)
 	r.Rasterize(painter)
 }
 
-func (c *Context) Fill() {
-	c.FillPreserve()
-	c.NewPath()
+func (dc *Context) Fill() {
+	dc.FillPreserve()
+	dc.NewPath()
+}
+
+func (dc *Context) DrawLine(x1, y1, x2, y2 float64) {
+	dc.MoveTo(x1, y1)
+	dc.LineTo(x2, y2)
+}
+
+func (dc *Context) DrawEllipseArc(x, y, rx, ry, angle1, angle2 float64) {
+	const n = 16
+	for i := 0; i <= n; i++ {
+		p1 := float64(i+0) / n
+		p2 := float64(i+1) / n
+		a1 := angle1 + (angle2-angle1)*p1
+		a2 := angle1 + (angle2-angle1)*p2
+		x0 := x + rx*math.Cos(a1)
+		y0 := y + ry*math.Sin(a1)
+		x1 := x + rx*math.Cos(a1+(a2-a1)/2)
+		y1 := y + ry*math.Sin(a1+(a2-a1)/2)
+		x2 := x + rx*math.Cos(a2)
+		y2 := y + ry*math.Sin(a2)
+		cx := 2*x1 - x0/2 - x2/2
+		cy := 2*y1 - y0/2 - y2/2
+		if i == 0 {
+			dc.MoveTo(x0, y0)
+		}
+		dc.QuadraticTo(cx, cy, x2, y2)
+	}
+}
+
+func (dc *Context) DrawEllipse(x, y, rx, ry float64) {
+	dc.DrawEllipseArc(x, y, rx, ry, 0, 2*math.Pi)
+}
+
+func (dc *Context) DrawArc(x, y, r, angle1, angle2 float64) {
+	dc.DrawEllipseArc(x, y, r, r, angle1, angle2)
+}
+
+func (dc *Context) DrawCircle(x, y, r float64) {
+	dc.DrawEllipseArc(x, y, r, r, 0, 2*math.Pi)
 }

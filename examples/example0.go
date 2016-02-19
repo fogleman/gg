@@ -15,8 +15,6 @@ func main() {
 	dc.FillPreserve()
 	dc.SetSourceRGB(0, 0, 0)
 	dc.SetLineWidth(8)
-	// dc.SetLineCap(dd.LineCapButt)
-	// dc.SetLineJoin(dd.LineJoinBevel)
 	dc.Stroke()
 	dc.WriteToPNG("out.png")
 }
