@@ -68,7 +68,7 @@ func (c *Context) Paint() {
 }
 
 func (c *Context) SetSourceRGBA(r, g, b, a float64) {
-	c.color = color.RGBA{
+	c.color = color.NRGBA{
 		uint8(r * 255),
 		uint8(g * 255),
 		uint8(b * 255),
