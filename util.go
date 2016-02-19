@@ -40,7 +40,6 @@ func loadFontFace(path string, size float64) font.Face {
 	}
 	return truetype.NewFace(f, &truetype.Options{
 		Size:    size,
-		DPI:     96,
 		Hinting: font.HintingFull,
 	})
 }
