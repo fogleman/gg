@@ -92,12 +92,40 @@ func (dc *Context) SetLineCap(lineCap LineCap) {
 	dc.lineCap = lineCap
 }
 
+func (dc *Context) SetLineCapRound() {
+	dc.lineCap = LineCapRound
+}
+
+func (dc *Context) SetLineCapButt() {
+	dc.lineCap = LineCapButt
+}
+
+func (dc *Context) SetLineCapSquare() {
+	dc.lineCap = LineCapSquare
+}
+
 func (dc *Context) SetLineJoin(lineJoin LineJoin) {
 	dc.lineJoin = lineJoin
 }
 
+func (dc *Context) SetLineJoinRound() {
+	dc.lineJoin = LineJoinRound
+}
+
+func (dc *Context) SetLineJoinBevel() {
+	dc.lineJoin = LineJoinBevel
+}
+
 func (dc *Context) SetFillRule(fillRule FillRule) {
 	dc.fillRule = fillRule
+}
+
+func (dc *Context) SetFillRuleWinding() {
+	dc.fillRule = FillRuleWinding
+}
+
+func (dc *Context) SetFillRuleEvenOdd() {
+	dc.fillRule = FillRuleEvenOdd
 }
 
 // Color Setters
