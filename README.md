@@ -112,7 +112,7 @@ SavePNG(path string, im image.Image) error
 
 ## What's Missing?
 
-If you need any of the features below, I recommend using `cairo` instead.
+If you need any of the features below, I recommend using `cairo` instead. Or even better, implement it and submit a pull request!
 
 - Clipping Regions
 - Gradients / Patterns
@@ -121,7 +121,7 @@ If you need any of the features below, I recommend using `cairo` instead.
 
 ## How Do it Do?
 
-`gg` is mostly a wrapper around `github.com/golang/freetype/raster`. The goal is to provide some more functionality and a simpler API that will suffice for most use cases.
+`gg` is mostly a wrapper around `github.com/golang/freetype/raster`. The goal is to provide some more functionality and a nicer API that will suffice for most use cases.
 
 ## Another Example
 
