@@ -6,6 +6,7 @@ import (
 	"image/draw"
 	"image/png"
 	"io/ioutil"
+	"math"
 	"os"
 	"strings"
 
@@ -15,7 +16,15 @@ import (
 	"golang.org/x/image/math/fixed"
 )
 
-func writeToPNG(path string, im image.Image) error {
+func Radians(degrees float64) float64 {
+	return degrees * math.Pi / 180
+}
+
+func Degrees(radians float64) float64 {
+	return radians * 180 / math.Pi
+}
+
+func writePNG(path string, im image.Image) error {
 	file, err := os.Create(path)
 	if err != nil {
 		return err

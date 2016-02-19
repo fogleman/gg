@@ -27,5 +27,5 @@ func main() {
 		dc.DrawLine(x1, y1, x2, y2)
 		dc.Stroke()
 	}
-	dc.WriteToPNG("out.png")
+	dc.WritePNG("out.png")
 }

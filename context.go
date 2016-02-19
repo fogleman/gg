@@ -46,6 +46,7 @@ type Context struct {
 	lineJoin  LineJoin
 	fillRule  FillRule
 	fontFace  font.Face
+	matrix    Matrix
 }
 
 func NewContext(width, height int) *Context {
@@ -65,6 +66,7 @@ func NewContextForRGBA(im *image.RGBA) *Context {
 		lineWidth: 1,
 		fillRule:  FillRuleWinding,
 		fontFace:  basicfont.Face7x13,
+		matrix:    Identity(),
 	}
 }
 
@@ -80,8 +82,8 @@ func (dc *Context) Height() int {
 	return dc.height
 }
 
-func (dc *Context) WriteToPNG(path string) error {
-	return writeToPNG(path, dc.im)
+func (dc *Context) WritePNG(path string) error {
+	return writePNG(path, dc.im)
 }
 
 func (dc *Context) SetLineWidth(lineWidth float64) {
@@ -163,11 +165,13 @@ func (dc *Context) SetRGB(r, g, b float64) {
 // Path Manipulation
 
 func (dc *Context) MoveTo(x, y float64) {
+	x, y = dc.TransformPoint(x, y)
 	dc.start = fp(x, y)
 	dc.path.Start(dc.start)
 }
 
 func (dc *Context) LineTo(x, y float64) {
+	x, y = dc.TransformPoint(x, y)
 	if len(dc.path) == 0 {
 		dc.MoveTo(x, y)
 	} else {
@@ -176,6 +180,8 @@ func (dc *Context) LineTo(x, y float64) {
 }
 
 func (dc *Context) QuadraticTo(x1, y1, x2, y2 float64) {
+	x1, y1 = dc.TransformPoint(x1, y1)
+	x2, y2 = dc.TransformPoint(x2, y2)
 	if len(dc.path) == 0 {
 		dc.MoveTo(x1, y1)
 	} else {
@@ -307,6 +313,7 @@ func (dc *Context) LoadFontFace(path string, size float64) {
 }
 
 func (dc *Context) DrawString(x, y float64, s string) {
+	x, y = dc.TransformPoint(x, y)
 	d := &font.Drawer{
 		Dst:  dc.im,
 		Src:  image.NewUniform(dc.color),
@@ -324,4 +331,34 @@ func (dc *Context) MeasureString(s string) float64 {
 	}
 	a := d.MeasureString(s)
 	return float64(a >> 6)
+}
+
+// Transformation Matrix Operations
+
+func (dc *Context) Identity() {
+	dc.matrix = Identity()
+}
+
+func (dc *Context) Translate(x, y float64) {
+	dc.matrix = dc.matrix.Translate(x, y)
+}
+
+func (dc *Context) Scale(x, y float64) {
+	dc.matrix = dc.matrix.Scale(x, y)
+}
+
+func (dc *Context) Rotate(angle float64) {
+	dc.matrix = dc.matrix.Rotate(angle)
+}
+
+func (dc *Context) RotateAbout(angle, x, y float64) {
+	dc.matrix = dc.matrix.RotateAbout(angle, x, y)
+}
+
+func (dc *Context) Shear(x, y float64) {
+	dc.matrix = dc.matrix.Shear(x, y)
+}
+
+func (dc *Context) TransformPoint(x, y float64) (tx, ty float64) {
+	return dc.matrix.TransformPoint(x, y)
 }
