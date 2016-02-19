@@ -8,25 +8,19 @@
 
 ## Hello, Circle!
 
+Look how easy!
+
 ```go
 package main
 
 import "github.com/fogleman/gg"
 
 func main() {
-    // create a new 1000x1000 pixel image
     dc := gg.NewContext(1000, 1000)
-
-    // draw a circle at the center with radius 400
-    // nothing is drawn yet, we have to call Stroke or Fill
     dc.DrawCircle(500, 500, 400)
-
-    // use black and 10px stroke width
     dc.SetRGB(0, 0, 0)
     dc.SetLineWidth(10)
     dc.Stroke()
-
-    // write the result to file
     dc.SavePNG("out.png")
 }
 ```
@@ -73,6 +67,8 @@ SetRGB(r, g, b float64)
 ```
 
 ## Transformation Functions
+
+All the usual matrix transformations are available too.
 
 ```go
 Identity()
