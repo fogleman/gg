@@ -112,6 +112,10 @@ If you need any of the features below, I recommend using `cairo` instead.
 - Cubic Beziers
 - Dashed Lines
 
+## How Do it Do?
+
+`gg` is mostly a wrapper around `github.com/golang/freetype/raster`. The goal is to provide some more functionality and a simpler API that will suffice for most use cases.
+
 ## Another Example
 
 See the output of this example below.
