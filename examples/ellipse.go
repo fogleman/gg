@@ -5,8 +5,6 @@ import "github.com/fogleman/gg"
 func main() {
 	const S = 1024
 	dc := gg.NewContext(S, S)
-	dc.SetRGB(1, 1, 1)
-	dc.Clear()
 	dc.SetRGBA(0, 0, 0, 0.1)
 	for i := 0; i < 360; i += 15 {
 		dc.Push()
