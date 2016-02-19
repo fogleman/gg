@@ -13,5 +13,5 @@ func main() {
 		dc.Fill()
 		dc.Pop()
 	}
-	dc.WritePNG("out.png")
+	dc.SavePNG("out.png")
 }

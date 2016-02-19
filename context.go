@@ -83,7 +83,7 @@ func (dc *Context) Height() int {
 	return dc.height
 }
 
-func (dc *Context) WritePNG(path string) error {
+func (dc *Context) SavePNG(path string) error {
 	return SavePNG(path, dc.im)
 }
 

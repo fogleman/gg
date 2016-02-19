@@ -11,5 +11,5 @@ func main() {
 	s := "Hello, world!"
 	w := dc.MeasureString(s)
 	dc.DrawString(500-w/2, 500, s)
-	dc.WritePNG("out.png")
+	dc.SavePNG("out.png")
 }

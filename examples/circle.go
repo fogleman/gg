@@ -8,5 +8,5 @@ func main() {
 	dc.SetRGB(0, 0, 0)
 	dc.SetLineWidth(10)
 	dc.Stroke()
-	dc.WritePNG("out.png")
+	dc.SavePNG("out.png")
 }

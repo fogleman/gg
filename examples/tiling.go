@@ -17,5 +17,5 @@ func main() {
 			dc.DrawImage(im, x*w, y*h)
 		}
 	}
-	dc.WritePNG("out.png")
+	dc.SavePNG("out.png")
 }
