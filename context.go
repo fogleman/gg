@@ -388,6 +388,10 @@ func (dc *Context) Scale(x, y float64) {
 	dc.matrix = dc.matrix.Scale(x, y)
 }
 
+func (dc *Context) ScaleAbout(sx, sy, x, y float64) {
+	dc.matrix = dc.matrix.ScaleAbout(sx, sy, x, y)
+}
+
 func (dc *Context) Rotate(angle float64) {
 	dc.matrix = dc.matrix.Rotate(angle)
 }

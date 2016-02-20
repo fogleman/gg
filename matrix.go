@@ -30,6 +30,13 @@ func Scale(x, y float64) Matrix {
 	}
 }
 
+func ScaleAbout(sx, sy, x, y float64) Matrix {
+	a := Translate(-x, -y)
+	b := Scale(sx, sy)
+	c := Translate(x, y)
+	return a.Multiply(b).Multiply(c)
+}
+
 func Rotate(angle float64) Matrix {
 	c := math.Cos(angle)
 	s := math.Sin(angle)
@@ -84,6 +91,10 @@ func (a Matrix) Translate(x, y float64) Matrix {
 
 func (a Matrix) Scale(x, y float64) Matrix {
 	return Scale(x, y).Multiply(a)
+}
+
+func (a Matrix) ScaleAbout(sx, sy, x, y float64) Matrix {
+	return ScaleAbout(sx, sy, x, y).Multiply(a)
 }
 
 func (a Matrix) Rotate(angle float64) Matrix {
