@@ -274,6 +274,20 @@ func (dc *Context) DrawRectangle(x, y, w, h float64) {
 	dc.LineTo(x, y)
 }
 
+func (dc *Context) DrawRoundedRectangle(x, y, w, h, r float64) {
+	x0, x1, x2, x3 := x, x+r, x+w-r, x+w
+	y0, y1, y2, y3 := y, y+r, y+h-r, y+h
+	dc.MoveTo(x1, y0)
+	dc.LineTo(x2, y0)
+	dc.DrawArc(x2, y1, r, Radians(270), Radians(360))
+	dc.LineTo(x3, y2)
+	dc.DrawArc(x2, y2, r, Radians(0), Radians(90))
+	dc.LineTo(x1, y3)
+	dc.DrawArc(x1, y2, r, Radians(90), Radians(180))
+	dc.LineTo(x0, y1)
+	dc.DrawArc(x1, y1, r, Radians(180), Radians(270))
+}
+
 func (dc *Context) DrawEllipticalArc(x, y, rx, ry, angle1, angle2 float64) {
 	const n = 16
 	for i := 0; i < n; i++ {

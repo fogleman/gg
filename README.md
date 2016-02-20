@@ -42,6 +42,7 @@ or circles? What a pain!
 ```go
 DrawLine(x1, y1, x2, y2 float64)
 DrawRectangle(x, y, w, h float64)
+DrawRoundedRectangle(x, y, w, h, r float64)
 DrawCircle(x, y, r float64)
 DrawArc(x, y, r, angle1, angle2 float64)
 DrawEllipse(x, y, rx, ry float64)
