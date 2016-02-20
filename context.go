@@ -384,8 +384,6 @@ func (dc *Context) DrawStringAnchored(s string, x, y, ax, ay float64) {
 
 func (dc *Context) MeasureString(s string) (w, h float64) {
 	d := &font.Drawer{
-		Dst:  nil,
-		Src:  nil,
 		Face: dc.fontFace,
 	}
 	a := d.MeasureString(s)
