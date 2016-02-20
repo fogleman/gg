@@ -204,28 +204,34 @@ func (dc *Context) ClearPath() {
 
 // Path Drawing
 
-func (dc *Context) StrokePreserve() {
-	var capper raster.Capper
+func (dc *Context) capper() raster.Capper {
 	switch dc.lineCap {
 	case LineCapButt:
-		capper = raster.ButtCapper
+		return raster.ButtCapper
 	case LineCapRound:
-		capper = raster.RoundCapper
+		return raster.RoundCapper
 	case LineCapSquare:
-		capper = raster.SquareCapper
+		return raster.SquareCapper
 	}
-	var joiner raster.Joiner
+	return nil
+}
+
+func (dc *Context) joiner() raster.Joiner {
 	switch dc.lineJoin {
 	case LineJoinBevel:
-		joiner = raster.BevelJoiner
+		return raster.BevelJoiner
 	case LineJoinRound:
-		joiner = raster.RoundJoiner
+		return raster.RoundJoiner
 	}
+	return nil
+}
+
+func (dc *Context) StrokePreserve() {
 	painter := raster.NewRGBAPainter(dc.im)
 	painter.SetColor(dc.color)
 	r := raster.NewRasterizer(dc.width, dc.height)
 	r.UseNonZeroWinding = true
-	r.AddStroke(dc.path, fi(dc.lineWidth), capper, joiner)
+	r.AddStroke(dc.path, fi(dc.lineWidth), dc.capper(), dc.joiner())
 	r.Rasterize(painter)
 }
 
