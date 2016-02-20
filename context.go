@@ -269,7 +269,7 @@ func (dc *Context) DrawRectangle(x, y, w, h float64) {
 
 func (dc *Context) DrawEllipticalArc(x, y, rx, ry, angle1, angle2 float64) {
 	const n = 16
-	for i := 0; i <= n; i++ {
+	for i := 0; i < n; i++ {
 		p1 := float64(i+0) / n
 		p2 := float64(i+1) / n
 		a1 := angle1 + (angle2-angle1)*p1
