@@ -13,5 +13,10 @@ func main() {
 		dc.Fill()
 		dc.Pop()
 	}
+	if im, err := gg.LoadPNG("examples/gopher.png"); err == nil {
+		w := im.Bounds().Size().X
+		h := im.Bounds().Size().Y
+		dc.DrawImage(im, S/2-w/2, S/2-h/2)
+	}
 	dc.SavePNG("out.png")
 }
