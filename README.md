@@ -94,6 +94,7 @@ Rotate(angle float64)
 RotateAbout(angle, x, y float64)
 Shear(x, y float64)
 TransformPoint(x, y float64) (tx, ty float64)
+InvertY()
 Push()
 Pop()
 ```

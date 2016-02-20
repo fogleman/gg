@@ -257,7 +257,8 @@ func (dc *Context) Fill() {
 // Convenient Drawing Functions
 
 func (dc *Context) Clear() {
-	draw.Draw(dc.im, dc.im.Bounds(), image.NewUniform(dc.color), image.ZP, draw.Src)
+	src := image.NewUniform(dc.color)
+	draw.Draw(dc.im, dc.im.Bounds(), src, image.ZP, draw.Src)
 }
 
 func (dc *Context) DrawLine(x1, y1, x2, y2 float64) {
@@ -373,6 +374,11 @@ func (dc *Context) Shear(x, y float64) {
 
 func (dc *Context) TransformPoint(x, y float64) (tx, ty float64) {
 	return dc.matrix.TransformPoint(x, y)
+}
+
+func (dc *Context) InvertY() {
+	dc.Translate(0, float64(dc.height))
+	dc.Scale(1, -1)
 }
 
 // Stack
