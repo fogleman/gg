@@ -377,13 +377,13 @@ func (dc *Context) TransformPoint(x, y float64) (tx, ty float64) {
 
 func (dc *Context) Push() {
 	x := *dc
-	x.path = make(raster.Path, len(dc.path))
-	copy(x.path, dc.path)
 	dc.stack = append(dc.stack, &x)
 }
 
 func (dc *Context) Pop() {
+	before := *dc
 	s := dc.stack
 	x, s := s[len(s)-1], s[:len(s)-1]
 	*dc = *x
+	dc.path = before.path
 }
