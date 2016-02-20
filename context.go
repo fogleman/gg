@@ -447,4 +447,5 @@ func (dc *Context) Pop() {
 	*dc = *x
 	dc.strokePath = before.strokePath
 	dc.fillPath = before.fillPath
+	dc.start = before.start
 }
