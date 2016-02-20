@@ -56,10 +56,17 @@ func RotateAbout(angle, x, y float64) Matrix {
 
 func Shear(x, y float64) Matrix {
 	return Matrix{
-		1, x,
-		y, 1,
+		1, y,
+		x, 1,
 		0, 0,
 	}
+}
+
+func ShearAbout(sx, sy, x, y float64) Matrix {
+	a := Translate(-x, -y)
+	b := Shear(sx, sy)
+	c := Translate(x, y)
+	return a.Multiply(b).Multiply(c)
 }
 
 func (a Matrix) Multiply(b Matrix) Matrix {
@@ -107,4 +114,8 @@ func (a Matrix) RotateAbout(angle, x, y float64) Matrix {
 
 func (a Matrix) Shear(x, y float64) Matrix {
 	return Shear(x, y).Multiply(a)
+}
+
+func (a Matrix) ShearAbout(sx, sy, x, y float64) Matrix {
+	return ShearAbout(sx, sy, x, y).Multiply(a)
 }

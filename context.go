@@ -404,6 +404,10 @@ func (dc *Context) Shear(x, y float64) {
 	dc.matrix = dc.matrix.Shear(x, y)
 }
 
+func (dc *Context) ShearAbout(sx, sy, x, y float64) {
+	dc.matrix = dc.matrix.ShearAbout(sx, sy, x, y)
+}
+
 func (dc *Context) TransformPoint(x, y float64) (tx, ty float64) {
 	return dc.matrix.TransformPoint(x, y)
 }
