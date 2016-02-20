@@ -39,7 +39,8 @@ type Context struct {
 	height     int
 	im         *image.RGBA
 	color      color.Color
-	path       raster.Path
+	strokePath raster.Path
+	fillPath   raster.Path
 	start      fixed.Point26_6
 	lineWidth  float64
 	lineCap    LineCap
@@ -168,38 +169,49 @@ func (dc *Context) SetRGB(r, g, b float64) {
 // Path Manipulation
 
 func (dc *Context) MoveTo(x, y float64) {
+	if len(dc.fillPath) > 0 {
+		dc.fillPath.Add1(dc.start)
+	}
 	x, y = dc.TransformPoint(x, y)
 	dc.start = fp(x, y)
-	dc.path.Start(dc.start)
+	dc.strokePath.Start(dc.start)
+	dc.fillPath.Start(dc.start)
 }
 
 func (dc *Context) LineTo(x, y float64) {
 	x, y = dc.TransformPoint(x, y)
-	if len(dc.path) == 0 {
+	if len(dc.strokePath) == 0 {
 		dc.MoveTo(x, y)
 	} else {
-		dc.path.Add1(fp(x, y))
+		p := fp(x, y)
+		dc.strokePath.Add1(p)
+		dc.fillPath.Add1(p)
 	}
 }
 
 func (dc *Context) QuadraticTo(x1, y1, x2, y2 float64) {
 	x1, y1 = dc.TransformPoint(x1, y1)
 	x2, y2 = dc.TransformPoint(x2, y2)
-	if len(dc.path) == 0 {
+	if len(dc.strokePath) == 0 {
 		dc.MoveTo(x1, y1)
 	} else {
-		dc.path.Add2(fp(x1, y1), fp(x2, y2))
+		p1 := fp(x1, y1)
+		p2 := fp(x2, y2)
+		dc.strokePath.Add2(p1, p2)
+		dc.fillPath.Add2(p1, p2)
 	}
 }
 
 func (dc *Context) ClosePath() {
-	if len(dc.path) > 0 {
-		dc.path.Add1(dc.start)
+	if len(dc.strokePath) > 0 {
+		dc.strokePath.Add1(dc.start)
+		dc.fillPath.Add1(dc.start)
 	}
 }
 
 func (dc *Context) ClearPath() {
-	dc.path.Clear()
+	dc.strokePath.Clear()
+	dc.fillPath.Clear()
 }
 
 // Path Drawing
@@ -231,7 +243,7 @@ func (dc *Context) StrokePreserve() {
 	painter.SetColor(dc.color)
 	r := raster.NewRasterizer(dc.width, dc.height)
 	r.UseNonZeroWinding = true
-	r.AddStroke(dc.path, fi(dc.lineWidth), dc.capper(), dc.joiner())
+	r.AddStroke(dc.strokePath, fi(dc.lineWidth), dc.capper(), dc.joiner())
 	r.Rasterize(painter)
 }
 
@@ -241,11 +253,17 @@ func (dc *Context) Stroke() {
 }
 
 func (dc *Context) FillPreserve() {
+	var path raster.Path
+	if len(dc.fillPath) > 0 {
+		path = make(raster.Path, len(dc.fillPath))
+		copy(path, dc.fillPath)
+		path.Add1(dc.start)
+	}
 	painter := raster.NewRGBAPainter(dc.im)
 	painter.SetColor(dc.color)
 	r := raster.NewRasterizer(dc.width, dc.height)
 	r.UseNonZeroWinding = dc.fillRule == FillRuleWinding
-	r.AddPath(dc.path)
+	r.AddPath(path)
 	r.Rasterize(painter)
 }
 
@@ -429,5 +447,6 @@ func (dc *Context) Pop() {
 	s := dc.stack
 	x, s := s[len(s)-1], s[:len(s)-1]
 	*dc = *x
-	dc.path = before.path
+	dc.strokePath = before.strokePath
+	dc.fillPath = before.fillPath
 }
