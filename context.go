@@ -179,10 +179,10 @@ func (dc *Context) MoveTo(x, y float64) {
 }
 
 func (dc *Context) LineTo(x, y float64) {
-	x, y = dc.TransformPoint(x, y)
 	if len(dc.strokePath) == 0 {
 		dc.MoveTo(x, y)
 	} else {
+		x, y = dc.TransformPoint(x, y)
 		p := fp(x, y)
 		dc.strokePath.Add1(p)
 		dc.fillPath.Add1(p)
