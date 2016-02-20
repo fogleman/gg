@@ -82,7 +82,7 @@ func loadFontFace(path string, points float64) font.Face {
 		panic(err)
 	}
 	return truetype.NewFace(f, &truetype.Options{
-		Size:    points,
-		Hinting: font.HintingFull,
+		Size: points,
+		// Hinting: font.HintingFull,
 	})
 }
