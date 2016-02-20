@@ -141,8 +141,8 @@ func (dc *Context) SetColor(c color.Color) {
 }
 
 func (dc *Context) SetHexColor(x string) {
-	r, g, b := parseHexColor(x)
-	dc.SetRGB255(r, g, b)
+	r, g, b, a := parseHexColor(x)
+	dc.SetRGBA255(r, g, b, a)
 }
 
 func (dc *Context) SetRGBA255(r, g, b, a int) {

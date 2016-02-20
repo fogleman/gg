@@ -48,8 +48,9 @@ func imageToRGBA(src image.Image) *image.RGBA {
 	return dst
 }
 
-func parseHexColor(x string) (r, g, b int) {
+func parseHexColor(x string) (r, g, b, a int) {
 	x = strings.TrimPrefix(x, "#")
+	a = 255
 	if len(x) == 3 {
 		format := "%1x%1x%1x"
 		fmt.Sscanf(x, format, &r, &g, &b)
@@ -60,6 +61,10 @@ func parseHexColor(x string) (r, g, b int) {
 	if len(x) == 6 {
 		format := "%02x%02x%02x"
 		fmt.Sscanf(x, format, &r, &g, &b)
+	}
+	if len(x) == 8 {
+		format := "%02x%02x%02x%02x"
+		fmt.Sscanf(x, format, &r, &g, &b, &a)
 	}
 	return
 }
