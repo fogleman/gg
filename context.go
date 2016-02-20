@@ -235,15 +235,11 @@ func (dc *Context) Stroke() {
 }
 
 func (dc *Context) FillPreserve() {
-	// make sure the path is closed
-	path := make(raster.Path, len(dc.path))
-	copy(path, dc.path)
-	path.Add1(dc.start)
 	painter := raster.NewRGBAPainter(dc.im)
 	painter.SetColor(dc.color)
 	r := raster.NewRasterizer(dc.width, dc.height)
 	r.UseNonZeroWinding = dc.fillRule == FillRuleWinding
-	r.AddPath(path)
+	r.AddPath(dc.path)
 	r.Rasterize(painter)
 }
 
