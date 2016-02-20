@@ -49,8 +49,6 @@ DrawEllipse(x, y, rx, ry float64)
 DrawEllipticalArc(x, y, rx, ry, angle1, angle2 float64)
 DrawImage(im image.Image, x, y int)
 DrawImageAnchored(im image.Image, x, y int, ax, ay float64)
-DrawString(s string, x, y float64)
-DrawStringAnchored(s string, x, y, ax, ay float64)
 
 MoveTo(x, y float64)
 LineTo(x, y float64)
@@ -63,6 +61,16 @@ Stroke()
 Fill()
 StrokePreserve()
 FillPreserve()
+```
+
+## Text Functions
+
+```go
+DrawString(s string, x, y float64)
+DrawStringAnchored(s string, x, y, ax, ay float64)
+MeasureString(s string) (w, h float64)
+SetFontFace(fontFace font.Face)
+LoadFontFace(path string, points float64)
 ```
 
 ## Color Functions
