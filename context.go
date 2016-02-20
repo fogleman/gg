@@ -323,8 +323,15 @@ func (dc *Context) DrawCircle(x, y, r float64) {
 }
 
 func (dc *Context) DrawImage(im image.Image, x, y int) {
+	dc.DrawImageAnchored(im, x, y, 0, 0)
+}
+
+func (dc *Context) DrawImageAnchored(im image.Image, x, y int, ax, ay float64) {
+	s := im.Bounds().Size()
+	x -= int(ax * float64(s.X))
+	y -= int(ay * float64(s.Y))
 	p := image.Pt(x, y)
-	r := image.Rectangle{p, p.Add(im.Bounds().Size())}
+	r := image.Rectangle{p, p.Add(s)}
 	draw.Draw(dc.im, r, im, image.ZP, draw.Over)
 }
 
@@ -339,7 +346,14 @@ func (dc *Context) LoadFontFace(path string, points float64) {
 	dc.fontHeight = points * 72 / 96
 }
 
-func (dc *Context) DrawString(x, y float64, s string) {
+func (dc *Context) DrawString(s string, x, y float64) {
+	dc.DrawStringAnchored(s, x, y, 0, 0)
+}
+
+func (dc *Context) DrawStringAnchored(s string, x, y, ax, ay float64) {
+	w, h := dc.MeasureString(s)
+	x -= ax * w
+	y += ay * h
 	x, y = dc.TransformPoint(x, y)
 	d := &font.Drawer{
 		Dst:  dc.im,

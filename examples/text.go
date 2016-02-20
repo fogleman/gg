@@ -1,20 +1,14 @@
 package main
 
-import (
-	"fmt"
-
-	"github.com/fogleman/gg"
-)
+import "github.com/fogleman/gg"
 
 func main() {
-	dc := gg.NewContext(1000, 1000)
+	const S = 1024
+	dc := gg.NewContext(S, S)
 	dc.SetRGB(1, 1, 1)
 	dc.Clear()
 	dc.SetRGB(0, 0, 0)
 	dc.LoadFontFace("/Library/Fonts/Arial.ttf", 96)
-	s := "Hello, world!"
-	w, h := dc.MeasureString(s)
-	fmt.Println(w, h)
-	dc.DrawString(500-w/2, 500+h/2, s)
+	dc.DrawStringAnchored("Hello, world!", S/2, S/2, 0.5, 0.5)
 	dc.SavePNG("out.png")
 }
