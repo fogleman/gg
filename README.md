@@ -2,6 +2,8 @@
 
 `gg` is a library for rendering 2D graphics in pure Go.
 
+![Separator](http://i.imgur.com/fsUvnPB.png)
+
 ## Installation
 
     go get github.com/fogleman/gg
