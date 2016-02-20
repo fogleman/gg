@@ -190,11 +190,11 @@ func (dc *Context) LineTo(x, y float64) {
 }
 
 func (dc *Context) QuadraticTo(x1, y1, x2, y2 float64) {
-	x1, y1 = dc.TransformPoint(x1, y1)
-	x2, y2 = dc.TransformPoint(x2, y2)
 	if len(dc.strokePath) == 0 {
 		dc.MoveTo(x1, y1)
 	} else {
+		x1, y1 = dc.TransformPoint(x1, y1)
+		x2, y2 = dc.TransformPoint(x2, y2)
 		p1 := fp(x1, y1)
 		p2 := fp(x2, y2)
 		dc.strokePath.Add2(p1, p2)
