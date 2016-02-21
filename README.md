@@ -111,6 +111,15 @@ RotateAbout(angle, x, y float64)
 ShearAbout(sx, sy, x, y float64)
 TransformPoint(x, y float64) (tx, ty float64)
 InvertY()
+```
+
+Note: transforms do not currently affect `DrawImage` or `DrawString`.
+
+## Stack Functions
+
+Save and restore the state of the context. These can be nested.
+
+```go
 Push()
 Pop()
 ```
