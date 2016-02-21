@@ -66,6 +66,8 @@ StrokePreserve()
 FillPreserve()
 ```
 
+It is often desired to center an image at a point. Use `DrawImageAnchored` with `ax` and `ay` set to 0.5 to do this. Use 0 to left or top align. Use 1 to right or bottom align. `DrawStringAnchored` does the same for text, so you don't need to call `MeasureString` yourself.
+
 ## Text Functions
 
 ```go
@@ -112,6 +114,10 @@ ShearAbout(sx, sy, x, y float64)
 TransformPoint(x, y float64) (tx, ty float64)
 InvertY()
 ```
+
+It is often desired to rotate or scale about a point that is not the origin. The functions `RotateAbout`, `ScaleAbout`, `ShearAbout` are provided as a convenience.
+
+`InvertY` is provided in case Y should increase from bottom to top vs. the default top to bottom.
 
 Note: transforms do not currently affect `DrawImage` or `DrawString`.
 
