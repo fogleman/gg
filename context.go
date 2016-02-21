@@ -426,7 +426,9 @@ func (dc *Context) Scale(x, y float64) {
 }
 
 func (dc *Context) ScaleAbout(sx, sy, x, y float64) {
-	dc.matrix = dc.matrix.ScaleAbout(sx, sy, x, y)
+	dc.Translate(x, y)
+	dc.Scale(sx, sy)
+	dc.Translate(-x, -y)
 }
 
 func (dc *Context) Rotate(angle float64) {
@@ -434,7 +436,9 @@ func (dc *Context) Rotate(angle float64) {
 }
 
 func (dc *Context) RotateAbout(angle, x, y float64) {
-	dc.matrix = dc.matrix.RotateAbout(angle, x, y)
+	dc.Translate(x, y)
+	dc.Rotate(angle)
+	dc.Translate(-x, -y)
 }
 
 func (dc *Context) Shear(x, y float64) {
@@ -442,7 +446,9 @@ func (dc *Context) Shear(x, y float64) {
 }
 
 func (dc *Context) ShearAbout(sx, sy, x, y float64) {
-	dc.matrix = dc.matrix.ShearAbout(sx, sy, x, y)
+	dc.Translate(x, y)
+	dc.Shear(sx, sy)
+	dc.Translate(-x, -y)
 }
 
 func (dc *Context) TransformPoint(x, y float64) (tx, ty float64) {

@@ -30,13 +30,6 @@ func Scale(x, y float64) Matrix {
 	}
 }
 
-func ScaleAbout(sx, sy, x, y float64) Matrix {
-	a := Translate(-x, -y)
-	b := Scale(sx, sy)
-	c := Translate(x, y)
-	return a.Multiply(b).Multiply(c)
-}
-
 func Rotate(angle float64) Matrix {
 	c := math.Cos(angle)
 	s := math.Sin(angle)
@@ -47,26 +40,12 @@ func Rotate(angle float64) Matrix {
 	}
 }
 
-func RotateAbout(angle, x, y float64) Matrix {
-	a := Translate(-x, -y)
-	b := Rotate(angle)
-	c := Translate(x, y)
-	return a.Multiply(b).Multiply(c)
-}
-
 func Shear(x, y float64) Matrix {
 	return Matrix{
 		1, y,
 		x, 1,
 		0, 0,
 	}
-}
-
-func ShearAbout(sx, sy, x, y float64) Matrix {
-	a := Translate(-x, -y)
-	b := Shear(sx, sy)
-	c := Translate(x, y)
-	return a.Multiply(b).Multiply(c)
 }
 
 func (a Matrix) Multiply(b Matrix) Matrix {
@@ -100,22 +79,10 @@ func (a Matrix) Scale(x, y float64) Matrix {
 	return Scale(x, y).Multiply(a)
 }
 
-func (a Matrix) ScaleAbout(sx, sy, x, y float64) Matrix {
-	return ScaleAbout(sx, sy, x, y).Multiply(a)
-}
-
 func (a Matrix) Rotate(angle float64) Matrix {
 	return Rotate(angle).Multiply(a)
 }
 
-func (a Matrix) RotateAbout(angle, x, y float64) Matrix {
-	return RotateAbout(angle, x, y).Multiply(a)
-}
-
 func (a Matrix) Shear(x, y float64) Matrix {
 	return Shear(x, y).Multiply(a)
-}
-
-func (a Matrix) ShearAbout(sx, sy, x, y float64) Matrix {
-	return ShearAbout(sx, sy, x, y).Multiply(a)
 }
