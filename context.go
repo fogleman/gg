@@ -214,8 +214,14 @@ func (dc *Context) CubicTo(x1, y1, x2, y2, x3, y3 float64) {
 	x2, y2 = dc.TransformPoint(x2, y2)
 	x3, y3 = dc.TransformPoint(x3, y3)
 	points := CubicBezier(x0, y0, x1, y1, x2, y2, x3, y3)
+	previous := dc.current.Fixed()
 	for _, p := range points[1:] {
 		f := p.Fixed()
+		if f == previous {
+			// TODO: this fixes some rendering issues but not all
+			continue
+		}
+		previous = f
 		dc.strokePath.Add1(f)
 		dc.fillPath.Add1(f)
 		dc.current = p
