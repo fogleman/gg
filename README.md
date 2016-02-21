@@ -133,7 +133,9 @@ even better, implement it and submit a pull request!
 
 - Clipping Regions
 - Gradients / Patterns
-- Dashed Lines
+- Dashed Lines\*
+
+\* *might be implemented soon*
 
 ## How Do it Do?
 
