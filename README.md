@@ -55,6 +55,7 @@ DrawImageAnchored(im image.Image, x, y int, ax, ay float64)
 MoveTo(x, y float64)
 LineTo(x, y float64)
 QuadraticTo(x1, y1, x2, y2 float64)
+CubicTo(x1, y1, x2, y2, x3, y3 float64)
 ClosePath()
 ClearPath()
 
@@ -132,7 +133,6 @@ even better, implement it and submit a pull request!
 
 - Clipping Regions
 - Gradients / Patterns
-- Cubic Beziers
 - Dashed Lines
 
 ## How Do it Do?

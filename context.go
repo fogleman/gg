@@ -9,7 +9,6 @@ import (
 	"github.com/golang/freetype/raster"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/basicfont"
-	"golang.org/x/image/math/fixed"
 )
 
 type LineCap int
@@ -41,7 +40,8 @@ type Context struct {
 	color      color.Color
 	strokePath raster.Path
 	fillPath   raster.Path
-	start      fixed.Point26_6
+	start      Point
+	current    Point
 	lineWidth  float64
 	lineCap    LineCap
 	lineJoin   LineJoin
@@ -170,12 +170,14 @@ func (dc *Context) SetRGB(r, g, b float64) {
 
 func (dc *Context) MoveTo(x, y float64) {
 	if len(dc.fillPath) > 0 {
-		dc.fillPath.Add1(dc.start)
+		dc.fillPath.Add1(dc.start.Fixed())
 	}
 	x, y = dc.TransformPoint(x, y)
-	dc.start = fp(x, y)
-	dc.strokePath.Start(dc.start)
-	dc.fillPath.Start(dc.start)
+	p := Point{x, y}
+	dc.strokePath.Start(p.Fixed())
+	dc.fillPath.Start(p.Fixed())
+	dc.start = p
+	dc.current = p
 }
 
 func (dc *Context) LineTo(x, y float64) {
@@ -183,29 +185,48 @@ func (dc *Context) LineTo(x, y float64) {
 		dc.MoveTo(x, y)
 	} else {
 		x, y = dc.TransformPoint(x, y)
-		p := fp(x, y)
-		dc.strokePath.Add1(p)
-		dc.fillPath.Add1(p)
+		p := Point{x, y}
+		dc.strokePath.Add1(p.Fixed())
+		dc.fillPath.Add1(p.Fixed())
+		dc.current = p
 	}
 }
 
 func (dc *Context) QuadraticTo(x1, y1, x2, y2 float64) {
 	if len(dc.strokePath) == 0 {
 		dc.MoveTo(x1, y1)
-	} else {
-		x1, y1 = dc.TransformPoint(x1, y1)
-		x2, y2 = dc.TransformPoint(x2, y2)
-		p1 := fp(x1, y1)
-		p2 := fp(x2, y2)
-		dc.strokePath.Add2(p1, p2)
-		dc.fillPath.Add2(p1, p2)
+	}
+	x1, y1 = dc.TransformPoint(x1, y1)
+	x2, y2 = dc.TransformPoint(x2, y2)
+	p1 := Point{x1, y1}
+	p2 := Point{x2, y2}
+	dc.strokePath.Add2(p1.Fixed(), p2.Fixed())
+	dc.fillPath.Add2(p1.Fixed(), p2.Fixed())
+	dc.current = p2
+}
+
+func (dc *Context) CubicTo(x1, y1, x2, y2, x3, y3 float64) {
+	if len(dc.strokePath) == 0 {
+		dc.MoveTo(x1, y1)
+	}
+	x0, y0 := dc.current.X, dc.current.Y
+	x1, y1 = dc.TransformPoint(x1, y1)
+	x2, y2 = dc.TransformPoint(x2, y2)
+	x3, y3 = dc.TransformPoint(x3, y3)
+	points := CubicBezier(x0, y0, x1, y1, x2, y2, x3, y3)
+	for _, p := range points[1:] {
+		f := p.Fixed()
+		dc.strokePath.Add1(f)
+		dc.fillPath.Add1(f)
+		dc.current = p
 	}
 }
 
 func (dc *Context) ClosePath() {
 	if len(dc.strokePath) > 0 {
-		dc.strokePath.Add1(dc.start)
-		dc.fillPath.Add1(dc.start)
+		dc.strokePath.Add1(dc.start.Fixed())
+		dc.fillPath.Add1(dc.start.Fixed())
+		dc.current = dc.start
 	}
 }
 
@@ -257,7 +278,7 @@ func (dc *Context) FillPreserve() {
 	if len(dc.fillPath) > 0 {
 		path = make(raster.Path, len(dc.fillPath))
 		copy(path, dc.fillPath)
-		path.Add1(dc.start)
+		path.Add1(dc.start.Fixed())
 	}
 	painter := raster.NewRGBAPainter(dc.im)
 	painter.SetColor(dc.color)
