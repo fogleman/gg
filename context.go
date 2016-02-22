@@ -491,4 +491,6 @@ func (dc *Context) Pop() {
 	dc.strokePath = before.strokePath
 	dc.fillPath = before.fillPath
 	dc.start = before.start
+	dc.current = before.current
+	dc.hasCurrent = before.hasCurrent
 }
