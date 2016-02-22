@@ -42,6 +42,7 @@ type Context struct {
 	fillPath   raster.Path
 	start      Point
 	current    Point
+	hasCurrent bool
 	lineWidth  float64
 	lineCap    LineCap
 	lineJoin   LineJoin
@@ -169,7 +170,7 @@ func (dc *Context) SetRGB(r, g, b float64) {
 // Path Manipulation
 
 func (dc *Context) MoveTo(x, y float64) {
-	if len(dc.fillPath) > 0 {
+	if dc.hasCurrent {
 		dc.fillPath.Add1(dc.start.Fixed())
 	}
 	x, y = dc.TransformPoint(x, y)
@@ -178,10 +179,11 @@ func (dc *Context) MoveTo(x, y float64) {
 	dc.fillPath.Start(p.Fixed())
 	dc.start = p
 	dc.current = p
+	dc.hasCurrent = true
 }
 
 func (dc *Context) LineTo(x, y float64) {
-	if len(dc.strokePath) == 0 {
+	if !dc.hasCurrent {
 		dc.MoveTo(x, y)
 	} else {
 		x, y = dc.TransformPoint(x, y)
@@ -193,7 +195,7 @@ func (dc *Context) LineTo(x, y float64) {
 }
 
 func (dc *Context) QuadraticTo(x1, y1, x2, y2 float64) {
-	if len(dc.strokePath) == 0 {
+	if !dc.hasCurrent {
 		dc.MoveTo(x1, y1)
 	}
 	x1, y1 = dc.TransformPoint(x1, y1)
@@ -206,7 +208,7 @@ func (dc *Context) QuadraticTo(x1, y1, x2, y2 float64) {
 }
 
 func (dc *Context) CubicTo(x1, y1, x2, y2, x3, y3 float64) {
-	if len(dc.strokePath) == 0 {
+	if !dc.hasCurrent {
 		dc.MoveTo(x1, y1)
 	}
 	x0, y0 := dc.current.X, dc.current.Y
@@ -229,7 +231,7 @@ func (dc *Context) CubicTo(x1, y1, x2, y2, x3, y3 float64) {
 }
 
 func (dc *Context) ClosePath() {
-	if len(dc.strokePath) > 0 {
+	if dc.hasCurrent {
 		dc.strokePath.Add1(dc.start.Fixed())
 		dc.fillPath.Add1(dc.start.Fixed())
 		dc.current = dc.start
@@ -239,6 +241,14 @@ func (dc *Context) ClosePath() {
 func (dc *Context) ClearPath() {
 	dc.strokePath.Clear()
 	dc.fillPath.Clear()
+	dc.hasCurrent = false
+}
+
+func (dc *Context) NewSubPath() {
+	if dc.hasCurrent {
+		dc.fillPath.Add1(dc.start.Fixed())
+	}
+	dc.hasCurrent = false
 }
 
 // Path Drawing
@@ -280,8 +290,8 @@ func (dc *Context) Stroke() {
 }
 
 func (dc *Context) FillPreserve() {
-	var path raster.Path
-	if len(dc.fillPath) > 0 {
+	path := dc.fillPath
+	if dc.hasCurrent {
 		path = make(raster.Path, len(dc.fillPath))
 		copy(path, dc.fillPath)
 		path.Add1(dc.start.Fixed())

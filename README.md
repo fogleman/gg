@@ -58,6 +58,7 @@ QuadraticTo(x1, y1, x2, y2 float64)
 CubicTo(x1, y1, x2, y2, x3, y3 float64)
 ClosePath()
 ClearPath()
+NewSubPath()
 
 Clear()
 Stroke()
