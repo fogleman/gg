@@ -19,9 +19,10 @@ func main() {
 	dc.MoveTo(x0, y0)
 	dc.CubicTo(x1, y1, x2, y2, x3, y3)
 	dc.SetRGBA(0, 0, 0, 0.2)
-	dc.SetLineWidth(10)
+	dc.SetLineWidth(8)
 	dc.FillPreserve()
 	dc.SetRGB(0, 0, 0)
+	dc.SetDash(16, 24)
 	dc.Stroke()
 
 	dc.MoveTo(x0, y0)
@@ -30,6 +31,7 @@ func main() {
 	dc.LineTo(x3, y3)
 	dc.SetRGBA(1, 0, 0, 0.4)
 	dc.SetLineWidth(2)
+	dc.SetDash(4, 8, 1, 8)
 	dc.Stroke()
 
 	dc.SavePNG("out.png")

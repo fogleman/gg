@@ -43,6 +43,7 @@ type Context struct {
 	start      Point
 	current    Point
 	hasCurrent bool
+	dashes     []float64
 	lineWidth  float64
 	lineCap    LineCap
 	lineJoin   LineJoin
@@ -89,6 +90,10 @@ func (dc *Context) Height() int {
 
 func (dc *Context) SavePNG(path string) error {
 	return SavePNG(path, dc.im)
+}
+
+func (dc *Context) SetDash(dashes ...float64) {
+	dc.dashes = dashes
 }
 
 func (dc *Context) SetLineWidth(lineWidth float64) {
@@ -276,11 +281,15 @@ func (dc *Context) joiner() raster.Joiner {
 }
 
 func (dc *Context) StrokePreserve() {
+	path := dc.strokePath
+	if len(dc.dashes) > 0 {
+		path = dashed(path, dc.dashes)
+	}
 	painter := raster.NewRGBAPainter(dc.im)
 	painter.SetColor(dc.color)
 	r := raster.NewRasterizer(dc.width, dc.height)
 	r.UseNonZeroWinding = true
-	r.AddStroke(dc.strokePath, fi(dc.lineWidth), dc.capper(), dc.joiner())
+	r.AddStroke(path, fi(dc.lineWidth), dc.capper(), dc.joiner())
 	r.Rasterize(painter)
 }
 

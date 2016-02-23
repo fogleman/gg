@@ -98,6 +98,7 @@ SetHexColor(x string)
 SetLineWidth(lineWidth float64)
 SetLineCap(lineCap LineCap)
 SetLineJoin(lineJoin LineJoin)
+SetDash(dashes ...float64)
 SetFillRule(fillRule FillRule)
 ```
 
@@ -149,9 +150,6 @@ even better, implement it and submit a pull request!
 
 - Clipping Regions
 - Gradients / Patterns
-- Dashed Lines\*
-
-\* *might be implemented soon*
 
 ## How Do it Do?
 

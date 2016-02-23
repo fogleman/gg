@@ -1,11 +1,25 @@
 package gg
 
-import "golang.org/x/image/math/fixed"
+import (
+	"math"
+
+	"golang.org/x/image/math/fixed"
+)
 
 type Point struct {
 	X, Y float64
 }
 
-func (p Point) Fixed() fixed.Point26_6 {
-	return fp(p.X, p.Y)
+func (a Point) Fixed() fixed.Point26_6 {
+	return fp(a.X, a.Y)
+}
+
+func (a Point) Distance(b Point) float64 {
+	return math.Hypot(a.X-b.X, a.Y-b.Y)
+}
+
+func (a Point) Interpolate(b Point, t float64) Point {
+	x := a.X + (b.X-a.X)*t
+	y := a.Y + (b.Y-a.Y)*t
+	return Point{x, y}
 }

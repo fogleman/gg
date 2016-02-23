@@ -107,14 +107,14 @@ func loadFontFace(path string, points float64) font.Face {
 
 func flattenPath(p raster.Path) [][]Point {
 	var result [][]Point
-	path := make([]Point, 0, 16)
+	var path []Point
 	var cx, cy float64
 	for i := 0; i < len(p); {
 		switch p[i] {
 		case 0:
 			if len(path) > 0 {
 				result = append(result, path)
-				path = make([]Point, 0, 16)
+				path = nil
 			}
 			x := unfix(p[i+1])
 			y := unfix(p[i+2])
@@ -155,4 +155,86 @@ func flattenPath(p raster.Path) [][]Point {
 		result = append(result, path)
 	}
 	return result
+}
+
+func dashPath(paths [][]Point, dashes []float64) [][]Point {
+	var result [][]Point
+	if len(dashes) == 0 {
+		return paths
+	}
+	if len(dashes) == 1 {
+		dashes = append(dashes, dashes[0])
+	}
+	for _, path := range paths {
+		if len(path) < 2 {
+			continue
+		}
+		previous := path[0]
+		pathIndex := 1
+		dashIndex := 0
+		segmentLength := 0.0
+		var segment []Point
+		segment = append(segment, previous)
+		for pathIndex < len(path) {
+			dashLength := dashes[dashIndex]
+			point := path[pathIndex]
+			d := previous.Distance(point)
+			maxd := dashLength - segmentLength
+			if d > maxd {
+				t := maxd / d
+				p := previous.Interpolate(point, t)
+				segment = append(segment, p)
+				if dashIndex%2 == 0 && len(segment) > 1 {
+					result = append(result, segment)
+				}
+				segment = nil
+				segment = append(segment, p)
+				segmentLength = 0
+				previous = p
+				dashIndex = (dashIndex + 1) % len(dashes)
+			} else {
+				segment = append(segment, point)
+				previous = point
+				segmentLength += d
+				pathIndex++
+			}
+		}
+		if dashIndex%2 == 0 && len(segment) > 1 {
+			result = append(result, segment)
+		}
+	}
+	return result
+}
+
+func rasterPath(paths [][]Point) raster.Path {
+	var result raster.Path
+	for _, path := range paths {
+		var previous fixed.Point26_6
+		for i, point := range path {
+			f := point.Fixed()
+			if i == 0 {
+				result.Start(f)
+			} else {
+				dx := f.X - previous.X
+				dy := f.Y - previous.Y
+				if dx < 0 {
+					dx = -dx
+				}
+				if dy < 0 {
+					dy = -dy
+				}
+				if dx+dy > 4 {
+					// TODO: this is a hack for cases where two points are
+					// too close - causes rendering issues with joins / caps
+					result.Add1(f)
+				}
+			}
+			previous = f
+		}
+	}
+	return result
+}
+
+func dashed(path raster.Path, dashes []float64) raster.Path {
+	return rasterPath(dashPath(flattenPath(path), dashes))
 }
