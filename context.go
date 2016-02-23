@@ -1,3 +1,4 @@
+// Package gg provides a simple API for rendering 2D graphics in pure Go.
 package gg
 
 import (
@@ -54,14 +55,20 @@ type Context struct {
 	stack      []*Context
 }
 
+// NewContext creates a new image.RGBA with the specified width and height
+// and prepares a context for rendering onto that image.
 func NewContext(width, height int) *Context {
 	return NewContextForRGBA(image.NewRGBA(image.Rect(0, 0, width, height)))
 }
 
+// NewContextForImage copies the specified image into a new image.RGBA
+// and prepares a context for rendering onto that image.
 func NewContextForImage(im image.Image) *Context {
 	return NewContextForRGBA(imageToRGBA(im))
 }
 
+// NewContextForRGBA prepares a context for rendering onto the specified image.
+// No copy is made.
 func NewContextForRGBA(im *image.RGBA) *Context {
 	return &Context{
 		width:      im.Bounds().Size().X,
@@ -76,22 +83,29 @@ func NewContextForRGBA(im *image.RGBA) *Context {
 	}
 }
 
+// Image returns the image that has been drawn by this context.
 func (dc *Context) Image() image.Image {
 	return dc.im
 }
 
+// Width returns the width of the image in pixels.
 func (dc *Context) Width() int {
 	return dc.width
 }
 
+// Height returns the height of the image in pixels.
 func (dc *Context) Height() int {
 	return dc.height
 }
 
+// SavePNG encodes the image as a PNG and writes it to disk.
 func (dc *Context) SavePNG(path string) error {
 	return SavePNG(path, dc.im)
 }
 
+// SetDash sets the current dash pattern to use. Call with zero arguments to
+// disable dashes. The values specify the lengths of each dash, with
+// alternating on and off lengths.
 func (dc *Context) SetDash(dashes ...float64) {
 	dc.dashes = dashes
 }
@@ -142,23 +156,33 @@ func (dc *Context) SetFillRuleEvenOdd() {
 
 // Color Setters
 
+// SetColor sets the current color.
 func (dc *Context) SetColor(c color.Color) {
 	dc.color = c
 }
 
+// SetHexColor sets the current color using a hex string. The leading pound
+// sign (#) is optional. Both 3- and 6-digit variations are supported. 8 digits
+// may be provided to set the alpha value as well.
 func (dc *Context) SetHexColor(x string) {
 	r, g, b, a := parseHexColor(x)
 	dc.SetRGBA255(r, g, b, a)
 }
 
+// SetRGBA255 sets the current color. r, g, b, a values should be between 0 and
+// 255, inclusive.
 func (dc *Context) SetRGBA255(r, g, b, a int) {
 	dc.color = color.NRGBA{uint8(r), uint8(g), uint8(b), uint8(a)}
 }
 
+// SetRGB255 sets the current color. r, g, b values should be between 0 and 255,
+// inclusive. Alpha will be set to 255 (fully opaque).
 func (dc *Context) SetRGB255(r, g, b int) {
 	dc.SetRGBA255(r, g, b, 255)
 }
 
+// SetRGBA sets the current color. r, g, b, a values should be between 0 and 1,
+// inclusive.
 func (dc *Context) SetRGBA(r, g, b, a float64) {
 	dc.color = color.NRGBA{
 		uint8(r * 255),
@@ -168,12 +192,16 @@ func (dc *Context) SetRGBA(r, g, b, a float64) {
 	}
 }
 
+// SetRGB sets the current color. r, g, b values should be between 0 and 1,
+// inclusive. Alpha will be set to 1 (fully opaque).
 func (dc *Context) SetRGB(r, g, b float64) {
 	dc.SetRGBA(r, g, b, 1)
 }
 
 // Path Manipulation
 
+// MoveTo starts a new subpath within the current path starting at the
+// specified point.
 func (dc *Context) MoveTo(x, y float64) {
 	if dc.hasCurrent {
 		dc.fillPath.Add1(dc.start.Fixed())
@@ -187,6 +215,8 @@ func (dc *Context) MoveTo(x, y float64) {
 	dc.hasCurrent = true
 }
 
+// LineTo adds a line segment to the current path starting at the current
+// point. If there is no current point, it is equivalent to MoveTo(x, y)
 func (dc *Context) LineTo(x, y float64) {
 	if !dc.hasCurrent {
 		dc.MoveTo(x, y)
@@ -199,6 +229,9 @@ func (dc *Context) LineTo(x, y float64) {
 	}
 }
 
+// QuadraticTo adds a quadratic bezier curve to the current path starting at
+// the current point. If there is no current point, it first performs
+// MoveTo(x1, y1)
 func (dc *Context) QuadraticTo(x1, y1, x2, y2 float64) {
 	if !dc.hasCurrent {
 		dc.MoveTo(x1, y1)
@@ -212,6 +245,10 @@ func (dc *Context) QuadraticTo(x1, y1, x2, y2 float64) {
 	dc.current = p2
 }
 
+// CubicTo adds a cubic bezier curve to the current path starting at the
+// current point. If there is no current point, it first performs
+// MoveTo(x1, y1). Because freetype/raster does not support cubic beziers,
+// this is emulated with many small line segments.
 func (dc *Context) CubicTo(x1, y1, x2, y2, x3, y3 float64) {
 	if !dc.hasCurrent {
 		dc.MoveTo(x1, y1)
@@ -235,6 +272,8 @@ func (dc *Context) CubicTo(x1, y1, x2, y2, x3, y3 float64) {
 	}
 }
 
+// ClosePath adds a line segment from the current point to the beginning
+// of the current subpath. If there is no current point, this is a no-op.
 func (dc *Context) ClosePath() {
 	if dc.hasCurrent {
 		dc.strokePath.Add1(dc.start.Fixed())
@@ -243,12 +282,16 @@ func (dc *Context) ClosePath() {
 	}
 }
 
+// ClearPath clears the current path. There is no current point after this
+// operation.
 func (dc *Context) ClearPath() {
 	dc.strokePath.Clear()
 	dc.fillPath.Clear()
 	dc.hasCurrent = false
 }
 
+// NewSubPath starts a new subpath within the current path. There is no current
+// point after this operation.
 func (dc *Context) NewSubPath() {
 	if dc.hasCurrent {
 		dc.fillPath.Add1(dc.start.Fixed())
@@ -280,6 +323,9 @@ func (dc *Context) joiner() raster.Joiner {
 	return nil
 }
 
+// StrokePreserve strokes the current path with the current color, line width,
+// line cap, line join and dash settings. The path is preserved after this
+// operation.
 func (dc *Context) StrokePreserve() {
 	path := dc.strokePath
 	if len(dc.dashes) > 0 {
@@ -293,11 +339,16 @@ func (dc *Context) StrokePreserve() {
 	r.Rasterize(painter)
 }
 
+// Stroke strokes the current path with the current color, line width,
+// line cap, line join and dash settings. The path is cleared after this
+// operation.
 func (dc *Context) Stroke() {
 	dc.StrokePreserve()
 	dc.ClearPath()
 }
 
+// FillPreserve fills the current path with the current color. Open subpaths
+// are implicity closed. The path is preserved after this operation.
 func (dc *Context) FillPreserve() {
 	path := dc.fillPath
 	if dc.hasCurrent {
@@ -313,6 +364,8 @@ func (dc *Context) FillPreserve() {
 	r.Rasterize(painter)
 }
 
+// Fill fills the current path with the current color. Open subpaths
+// are implicity closed. The path is cleared after this operation.
 func (dc *Context) Fill() {
 	dc.FillPreserve()
 	dc.ClearPath()
@@ -320,6 +373,7 @@ func (dc *Context) Fill() {
 
 // Convenient Drawing Functions
 
+// Clear fills the entire image with the current color.
 func (dc *Context) Clear() {
 	src := image.NewUniform(dc.color)
 	draw.Draw(dc.im, dc.im.Bounds(), src, image.ZP, draw.Src)
@@ -386,10 +440,15 @@ func (dc *Context) DrawCircle(x, y, r float64) {
 	dc.DrawEllipticalArc(x, y, r, r, 0, 2*math.Pi)
 }
 
+// DrawImage draws the specified image at the specified point.
+// Currently, rotation and scaling transforms are not supported.
 func (dc *Context) DrawImage(im image.Image, x, y int) {
 	dc.DrawImageAnchored(im, x, y, 0, 0)
 }
 
+// DrawImageAnchored draws the specified image at the specified anchor point.
+// The anchor point is x - w * ax, y - h * ay, where w, h is the size of the
+// image. Use ax=0.5, ay=0.5 to center the image at the specified point.
 func (dc *Context) DrawImageAnchored(im image.Image, x, y int, ax, ay float64) {
 	s := im.Bounds().Size()
 	x -= int(ax * float64(s.X))
@@ -415,10 +474,15 @@ func (dc *Context) LoadFontFace(path string, points float64) {
 	}
 }
 
+// DrawString draws the specified text at the specified point.
+// Currently, rotation and scaling transforms are not supported.
 func (dc *Context) DrawString(s string, x, y float64) {
 	dc.DrawStringAnchored(s, x, y, 0, 0)
 }
 
+// DrawStringAnchored draws the specified text at the specified anchor point.
+// The anchor point is x - w * ax, y - h * ay, where w, h is the size of the
+// text. Use ax=0.5, ay=0.5 to center the text at the specified point.
 func (dc *Context) DrawStringAnchored(s string, x, y, ax, ay float64) {
 	w, h := dc.MeasureString(s)
 	x -= ax * w
@@ -433,6 +497,8 @@ func (dc *Context) DrawStringAnchored(s string, x, y, ax, ay float64) {
 	d.DrawString(s)
 }
 
+// MeasureString returns the rendered width and height of the specified text
+// given the current font face.
 func (dc *Context) MeasureString(s string) (w, h float64) {
 	d := &font.Drawer{
 		Face: dc.fontFace,
@@ -443,48 +509,67 @@ func (dc *Context) MeasureString(s string) (w, h float64) {
 
 // Transformation Matrix Operations
 
+// Identity resets the current transformation matrix to the identity matrix.
+// This results in no translating, scaling, rotating, or shearing.
 func (dc *Context) Identity() {
 	dc.matrix = Identity()
 }
 
+// Translate updates the current matrix with a translation.
 func (dc *Context) Translate(x, y float64) {
 	dc.matrix = dc.matrix.Translate(x, y)
 }
 
+// Scale updates the current matrix with a scaling factor.
+// Scaling occurs about the origin.
 func (dc *Context) Scale(x, y float64) {
 	dc.matrix = dc.matrix.Scale(x, y)
 }
 
+// ScaleAbout updates the current matrix with a scaling factor.
+// Scaling occurs about the specified point.
 func (dc *Context) ScaleAbout(sx, sy, x, y float64) {
 	dc.Translate(x, y)
 	dc.Scale(sx, sy)
 	dc.Translate(-x, -y)
 }
 
+// Rotate updates the current matrix with a clockwise rotation.
+// Rotation occurs about the origin. Angle is specified in radians.
 func (dc *Context) Rotate(angle float64) {
 	dc.matrix = dc.matrix.Rotate(angle)
 }
 
+// RotateAbout updates the current matrix with a clockwise rotation.
+// Rotation occurs about the specified point. Angle is specified in radians.
 func (dc *Context) RotateAbout(angle, x, y float64) {
 	dc.Translate(x, y)
 	dc.Rotate(angle)
 	dc.Translate(-x, -y)
 }
 
+// Shear updates the current matrix with a shearing angle.
+// Shearing occurs about the origin.
 func (dc *Context) Shear(x, y float64) {
 	dc.matrix = dc.matrix.Shear(x, y)
 }
 
+// ShearAbout updates the current matrix with a shearing angle.
+// Shearing occurs about the specified point.
 func (dc *Context) ShearAbout(sx, sy, x, y float64) {
 	dc.Translate(x, y)
 	dc.Shear(sx, sy)
 	dc.Translate(-x, -y)
 }
 
+// TransformPoint multiplies the specified point by the current matrix,
+// returning a transformed position.
 func (dc *Context) TransformPoint(x, y float64) (tx, ty float64) {
 	return dc.matrix.TransformPoint(x, y)
 }
 
+// InvertY flips the Y axis so that Y grows from bottom to top and Y=0 is at
+// the bottom of the image.
 func (dc *Context) InvertY() {
 	dc.Translate(0, float64(dc.height))
 	dc.Scale(1, -1)
@@ -492,11 +577,14 @@ func (dc *Context) InvertY() {
 
 // Stack
 
+// Push saves the current state of the context for later retrieval. These
+// can be nested.
 func (dc *Context) Push() {
 	x := *dc
 	dc.stack = append(dc.stack, &x)
 }
 
+// Pop pops the last saved context state from the stack.
 func (dc *Context) Pop() {
 	before := *dc
 	s := dc.stack
