@@ -289,7 +289,7 @@ func (dc *Context) StrokePreserve() {
 	painter.SetColor(dc.color)
 	r := raster.NewRasterizer(dc.width, dc.height)
 	r.UseNonZeroWinding = true
-	r.AddStroke(path, fi(dc.lineWidth), dc.capper(), dc.joiner())
+	r.AddStroke(path, fix(dc.lineWidth), dc.capper(), dc.joiner())
 	r.Rasterize(painter)
 }
 
@@ -423,7 +423,7 @@ func (dc *Context) DrawStringAnchored(s string, x, y, ax, ay float64) {
 		Dst:  dc.im,
 		Src:  image.NewUniform(dc.color),
 		Face: dc.fontFace,
-		Dot:  fp(x, y),
+		Dot:  fixp(x, y),
 	}
 	d.DrawString(s)
 }

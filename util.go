@@ -70,11 +70,11 @@ func parseHexColor(x string) (r, g, b, a int) {
 	return
 }
 
-func fp(x, y float64) fixed.Point26_6 {
+func fixp(x, y float64) fixed.Point26_6 {
 	return fixed.Point26_6{fixed.Int26_6(x * 64), fixed.Int26_6(y * 64)}
 }
 
-func fi(x float64) fixed.Int26_6 {
+func fix(x float64) fixed.Int26_6 {
 	return fixed.Int26_6(x * 64)
 }
 

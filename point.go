@@ -11,7 +11,7 @@ type Point struct {
 }
 
 func (a Point) Fixed() fixed.Point26_6 {
-	return fp(a.X, a.Y)
+	return fixp(a.X, a.Y)
 }
 
 func (a Point) Distance(b Point) float64 {
