@@ -8,6 +8,10 @@
 
     go get github.com/fogleman/gg
 
+## GoDoc
+
+https://godoc.org/github.com/fogleman/gg
+
 ## Hello, Circle!
 
 Look how easy!
