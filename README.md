@@ -2,7 +2,7 @@
 
 `gg` is a library for rendering 2D graphics in pure Go.
 
-![Separator](http://i.imgur.com/fsUvnPB.png)
+![Stars](http://i.imgur.com/CylQIJt.png)
 
 ## Installation
 
@@ -142,6 +142,8 @@ Degrees(radians float64) float64
 LoadPNG(path string) (image.Image, error)
 SavePNG(path string, im image.Image) error
 ```
+
+![Separator](http://i.imgur.com/fsUvnPB.png)
 
 ## What's Missing?
 
