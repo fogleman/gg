@@ -406,8 +406,13 @@ func (dc *Context) SetFontFace(fontFace font.Face) {
 }
 
 func (dc *Context) LoadFontFace(path string, points float64) {
-	dc.fontFace = loadFontFace(path, points)
-	dc.fontHeight = points * 72 / 96
+	if face, err := loadFontFace(path, points); err == nil {
+		dc.fontFace = face
+		dc.fontHeight = points * 72 / 96
+	} else {
+		dc.fontFace = basicfont.Face7x13
+		dc.fontHeight = 13
+	}
 }
 
 func (dc *Context) DrawString(s string, x, y float64) {

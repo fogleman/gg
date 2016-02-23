@@ -90,19 +90,20 @@ func unfix(x fixed.Int26_6) float64 {
 	return 0
 }
 
-func loadFontFace(path string, points float64) font.Face {
+func loadFontFace(path string, points float64) (font.Face, error) {
 	fontBytes, err := ioutil.ReadFile(path)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	f, err := truetype.Parse(fontBytes)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return truetype.NewFace(f, &truetype.Options{
+	face := truetype.NewFace(f, &truetype.Options{
 		Size: points,
 		// Hinting: font.HintingFull,
 	})
+	return face, nil
 }
 
 func flattenPath(p raster.Path) [][]Point {
