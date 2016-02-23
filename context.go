@@ -584,7 +584,7 @@ func (dc *Context) Push() {
 	dc.stack = append(dc.stack, &x)
 }
 
-// Pop pops the last saved context state from the stack.
+// Pop restores the last saved context state from the stack.
 func (dc *Context) Pop() {
 	before := *dc
 	s := dc.stack
