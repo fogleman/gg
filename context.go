@@ -5,6 +5,8 @@ import (
 	"image"
 	"image/color"
 	"image/draw"
+	"image/png"
+	"io"
 	"math"
 
 	"github.com/golang/freetype/raster"
@@ -101,6 +103,11 @@ func (dc *Context) Height() int {
 // SavePNG encodes the image as a PNG and writes it to disk.
 func (dc *Context) SavePNG(path string) error {
 	return SavePNG(path, dc.im)
+}
+
+// EncodePNG encodes the image as a PNG and writes it to the provided io.Writer.
+func (dc *Context) EncodePNG(w io.Writer) error {
+	return png.Encode(w, dc.im)
 }
 
 // SetDash sets the current dash pattern to use. Call with zero arguments to
