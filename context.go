@@ -504,6 +504,14 @@ func (dc *Context) DrawStringAnchored(s string, x, y, ax, ay float64) {
 	d.DrawString(s)
 }
 
+func (dc *Context) DrawStringWrapped(s string, x, y, w float64) {
+	lines := wordWrap(dc, s, w)
+	for _, line := range lines {
+		dc.DrawStringAnchored(line, x, y, 0, 0)
+		y += dc.fontHeight * 1.5
+	}
+}
+
 // MeasureString returns the rendered width and height of the specified text
 // given the current font face.
 func (dc *Context) MeasureString(s string) (w, h float64) {
