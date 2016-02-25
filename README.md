@@ -75,6 +75,8 @@ It is often desired to center an image at a point. Use `DrawImageAnchored` with 
 
 ## Text Functions
 
+It will even do word wrap for you!
+
 ```go
 DrawString(s string, x, y float64)
 DrawStringAnchored(s string, x, y, ax, ay float64)
