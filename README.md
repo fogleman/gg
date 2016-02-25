@@ -78,7 +78,9 @@ It is often desired to center an image at a point. Use `DrawImageAnchored` with 
 ```go
 DrawString(s string, x, y float64)
 DrawStringAnchored(s string, x, y, ax, ay float64)
+DrawStringWrapped(s string, x, y, ax, ay, width, lineSpacing float64, align Align)
 MeasureString(s string) (w, h float64)
+WordWrap(s string, w float64) []string
 SetFontFace(fontFace font.Face)
 LoadFontFace(path string, points float64)
 ```
