@@ -29,29 +29,26 @@ func wordWrap(m measureStringer, s string, width float64) []string {
 	var result []string
 	for _, line := range strings.Split(s, "\n") {
 		fields := splitOnSpace(line)
-		widths := make([]float64, len(fields))
-		for i, field := range fields {
-			widths[i], _ = m.MeasureString(field)
+		if len(fields)%2 == 1 {
+			fields = append(fields, "")
 		}
-		start := 0
-		total := 0.0
+		x := ""
 		for i := 0; i < len(fields); i += 2 {
-			if total+widths[i] > width {
-				if i == start {
-					end := i + 2
-					result = append(result, strings.Join(fields[start:end], ""))
-					start, total = end, 0
+			w, _ := m.MeasureString(x + fields[i])
+			if w > width {
+				if x == "" {
+					result = append(result, fields[i])
+					x = ""
 					continue
 				} else {
-					end := i
-					result = append(result, strings.Join(fields[start:end], ""))
-					start, total = end, 0
+					result = append(result, x)
+					x = ""
 				}
 			}
-			total += widths[i] + widths[i+1]
+			x += fields[i] + fields[i+1]
 		}
-		if start < len(fields) {
-			result = append(result, strings.Join(fields[start:], ""))
+		if x != "" {
+			result = append(result, x)
 		}
 	}
 	for i, line := range result {

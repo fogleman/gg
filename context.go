@@ -36,6 +36,14 @@ const (
 	FillRuleEvenOdd
 )
 
+type Align int
+
+const (
+	AlignLeft Align = iota
+	AlignCenter
+	AlignRight
+)
+
 type Context struct {
 	width      int
 	height     int
@@ -504,11 +512,29 @@ func (dc *Context) DrawStringAnchored(s string, x, y, ax, ay float64) {
 	d.DrawString(s)
 }
 
-func (dc *Context) DrawStringWrapped(s string, x, y, w float64) {
-	lines := wordWrap(dc, s, w)
+// DrawStringWrapped word-wraps the specified string to the given max width
+// and then draws it at the specified anchor point using the given line
+// spacing and text alignment.
+func (dc *Context) DrawStringWrapped(s string, x, y, ax, ay, width, lineSpacing float64, align Align) {
+	lines := dc.WordWrap(s, width)
+	h := float64(len(lines)) * dc.fontHeight * lineSpacing
+	h -= (lineSpacing - 1) * dc.fontHeight
+	x -= ax * width
+	y -= ay * h
+	switch align {
+	case AlignLeft:
+		ax = 0
+	case AlignCenter:
+		ax = 0.5
+		x += width / 2
+	case AlignRight:
+		ax = 1
+		x += width
+	}
+	ay = 1
 	for _, line := range lines {
-		dc.DrawStringAnchored(line, x, y, 0, 0)
-		y += dc.fontHeight * 1.5
+		dc.DrawStringAnchored(line, x, y, ax, ay)
+		y += dc.fontHeight * lineSpacing
 	}
 }
 
@@ -520,6 +546,12 @@ func (dc *Context) MeasureString(s string) (w, h float64) {
 	}
 	a := d.MeasureString(s)
 	return float64(a >> 6), dc.fontHeight
+}
+
+// WordWrap wraps the specified string to the given max width and current
+// font face.
+func (dc *Context) WordWrap(s string, w float64) []string {
+	return wordWrap(dc, s, w)
 }
 
 // Transformation Matrix Operations
