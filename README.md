@@ -59,6 +59,7 @@ DrawCircle(x, y, r float64)
 DrawArc(x, y, r, angle1, angle2 float64)
 DrawEllipse(x, y, rx, ry float64)
 DrawEllipticalArc(x, y, rx, ry, angle1, angle2 float64)
+DrawRegularPolygon(n int, x, y, r, rotation float64)
 DrawImage(im image.Image, x, y int)
 DrawImageAnchored(im image.Image, x, y int, ax, ay float64)
 
