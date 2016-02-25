@@ -147,6 +147,19 @@ Push()
 Pop()
 ```
 
+## Clipping Functions
+
+Use clipping regions to restrict drawing operations to an area that you
+defined using paths.
+
+```go
+Clip()
+ClipPreserve()
+ResetClip()
+```
+
+Note: As currently implemented, clipping isn't very fast, but it works.
+
 ## Helper Functions
 
 Sometimes you just don't want to write these yourself.
@@ -165,7 +178,6 @@ SavePNG(path string, im image.Image) error
 If you need any of the features below, I recommend using `cairo` instead. Or
 even better, implement it and submit a pull request!
 
-- Clipping Regions
 - Gradients / Patterns
 
 ## How Do it Do?

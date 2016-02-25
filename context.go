@@ -48,6 +48,7 @@ type Context struct {
 	width      int
 	height     int
 	im         *image.RGBA
+	mask       *image.Alpha
 	color      color.Color
 	strokePath raster.Path
 	fillPath   raster.Path
@@ -338,10 +339,7 @@ func (dc *Context) joiner() raster.Joiner {
 	return nil
 }
 
-// StrokePreserve strokes the current path with the current color, line width,
-// line cap, line join and dash settings. The path is preserved after this
-// operation.
-func (dc *Context) StrokePreserve() {
+func (dc *Context) stroke(painter raster.Painter) {
 	path := dc.strokePath
 	if len(dc.dashes) > 0 {
 		path = dashed(path, dc.dashes)
@@ -350,12 +348,40 @@ func (dc *Context) StrokePreserve() {
 		// that result in rendering issues
 		path = rasterPath(flattenPath(path))
 	}
-	painter := raster.NewRGBAPainter(dc.im)
-	painter.SetColor(dc.color)
 	r := raster.NewRasterizer(dc.width, dc.height)
 	r.UseNonZeroWinding = true
 	r.AddStroke(path, fix(dc.lineWidth), dc.capper(), dc.joiner())
 	r.Rasterize(painter)
+}
+
+func (dc *Context) fill(painter raster.Painter) {
+	path := dc.fillPath
+	if dc.hasCurrent {
+		path = make(raster.Path, len(dc.fillPath))
+		copy(path, dc.fillPath)
+		path.Add1(dc.start.Fixed())
+	}
+	r := raster.NewRasterizer(dc.width, dc.height)
+	r.UseNonZeroWinding = dc.fillRule == FillRuleWinding
+	r.AddPath(path)
+	r.Rasterize(painter)
+}
+
+// StrokePreserve strokes the current path with the current color, line width,
+// line cap, line join and dash settings. The path is preserved after this
+// operation.
+func (dc *Context) StrokePreserve() {
+	if dc.mask == nil {
+		painter := raster.NewRGBAPainter(dc.im)
+		painter.SetColor(dc.color)
+		dc.stroke(painter)
+	} else {
+		im := image.NewRGBA(image.Rect(0, 0, dc.width, dc.height))
+		painter := raster.NewRGBAPainter(im)
+		painter.SetColor(dc.color)
+		dc.stroke(painter)
+		draw.DrawMask(dc.im, dc.im.Bounds(), im, image.ZP, dc.mask, image.ZP, draw.Over)
+	}
 }
 
 // Stroke strokes the current path with the current color, line width,
@@ -369,18 +395,17 @@ func (dc *Context) Stroke() {
 // FillPreserve fills the current path with the current color. Open subpaths
 // are implicity closed. The path is preserved after this operation.
 func (dc *Context) FillPreserve() {
-	path := dc.fillPath
-	if dc.hasCurrent {
-		path = make(raster.Path, len(dc.fillPath))
-		copy(path, dc.fillPath)
-		path.Add1(dc.start.Fixed())
+	if dc.mask == nil {
+		painter := raster.NewRGBAPainter(dc.im)
+		painter.SetColor(dc.color)
+		dc.fill(painter)
+	} else {
+		im := image.NewRGBA(image.Rect(0, 0, dc.width, dc.height))
+		painter := raster.NewRGBAPainter(im)
+		painter.SetColor(dc.color)
+		dc.fill(painter)
+		draw.DrawMask(dc.im, dc.im.Bounds(), im, image.ZP, dc.mask, image.ZP, draw.Over)
 	}
-	painter := raster.NewRGBAPainter(dc.im)
-	painter.SetColor(dc.color)
-	r := raster.NewRasterizer(dc.width, dc.height)
-	r.UseNonZeroWinding = dc.fillRule == FillRuleWinding
-	r.AddPath(path)
-	r.Rasterize(painter)
 }
 
 // Fill fills the current path with the current color. Open subpaths
@@ -388,6 +413,37 @@ func (dc *Context) FillPreserve() {
 func (dc *Context) Fill() {
 	dc.FillPreserve()
 	dc.ClearPath()
+}
+
+// ClipPreserve updates the clipping region by intersecting the current
+// clipping region with the current path as it would be filled by dc.Fill().
+// The path is preserved after this operation.
+func (dc *Context) ClipPreserve() {
+	clip := image.NewAlpha(image.Rect(0, 0, dc.width, dc.height))
+	painter := raster.NewAlphaOverPainter(clip)
+	dc.fill(painter)
+	if dc.mask == nil {
+		dc.mask = clip
+	} else {
+		r := image.Rect(0, 0, dc.width, dc.height)
+		mask := image.NewAlpha(r)
+		draw.DrawMask(mask, r, clip, image.ZP, dc.mask, image.ZP, draw.Over)
+		draw.DrawMask(mask, r, dc.mask, image.ZP, clip, image.ZP, draw.Over)
+		dc.mask = mask
+	}
+}
+
+// Clip updates the clipping region by intersecting the current
+// clipping region with the current path as it would be filled by dc.Fill().
+// The path is cleared after this operation.
+func (dc *Context) Clip() {
+	dc.ClipPreserve()
+	dc.ClearPath()
+}
+
+// ResetClip clears the clipping region.
+func (dc *Context) ResetClip() {
+	dc.mask = nil
 }
 
 // Convenient Drawing Functions
@@ -488,7 +544,11 @@ func (dc *Context) DrawImageAnchored(im image.Image, x, y int, ax, ay float64) {
 	y -= int(ay * float64(s.Y))
 	p := image.Pt(x, y)
 	r := image.Rectangle{p, p.Add(s)}
-	draw.Draw(dc.im, r, im, image.ZP, draw.Over)
+	if dc.mask == nil {
+		draw.Draw(dc.im, r, im, image.ZP, draw.Over)
+	} else {
+		draw.DrawMask(dc.im, r, im, image.ZP, dc.mask, p, draw.Over)
+	}
 }
 
 // Text Functions
@@ -507,6 +567,16 @@ func (dc *Context) LoadFontFace(path string, points float64) {
 	}
 }
 
+func (dc *Context) drawString(im *image.RGBA, s string, x, y float64) {
+	d := &font.Drawer{
+		Dst:  im,
+		Src:  image.NewUniform(dc.color),
+		Face: dc.fontFace,
+		Dot:  fixp(x, y),
+	}
+	d.DrawString(s)
+}
+
 // DrawString draws the specified text at the specified point.
 // Currently, rotation and scaling transforms are not supported.
 func (dc *Context) DrawString(s string, x, y float64) {
@@ -521,13 +591,13 @@ func (dc *Context) DrawStringAnchored(s string, x, y, ax, ay float64) {
 	x -= ax * w
 	y += ay * h
 	x, y = dc.TransformPoint(x, y)
-	d := &font.Drawer{
-		Dst:  dc.im,
-		Src:  image.NewUniform(dc.color),
-		Face: dc.fontFace,
-		Dot:  fixp(x, y),
+	if dc.mask == nil {
+		dc.drawString(dc.im, s, x, y)
+	} else {
+		im := image.NewRGBA(image.Rect(0, 0, dc.width, dc.height))
+		dc.drawString(im, s, x, y)
+		draw.DrawMask(dc.im, dc.im.Bounds(), im, image.ZP, dc.mask, image.ZP, draw.Over)
 	}
-	d.DrawString(s)
 }
 
 // DrawStringWrapped word-wraps the specified string to the given max width
@@ -655,6 +725,7 @@ func (dc *Context) Pop() {
 	s := dc.stack
 	x, s := s[len(s)-1], s[:len(s)-1]
 	*dc = *x
+	dc.mask = before.mask
 	dc.strokePath = before.strokePath
 	dc.fillPath = before.fillPath
 	dc.start = before.start
