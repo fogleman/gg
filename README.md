@@ -167,6 +167,7 @@ Sometimes you just don't want to write these yourself.
 ```go
 Radians(degrees float64) float64
 Degrees(radians float64) float64
+LoadImage(path string) (image.Image, error)
 LoadPNG(path string) (image.Image, error)
 SavePNG(path string, im image.Image) error
 ```
