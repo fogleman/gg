@@ -345,6 +345,10 @@ func (dc *Context) StrokePreserve() {
 	path := dc.strokePath
 	if len(dc.dashes) > 0 {
 		path = dashed(path, dc.dashes)
+	} else {
+		// TODO: this is a temporary workaround to remove tiny segments
+		// that result in rendering issues
+		path = rasterPath(flattenPath(path))
 	}
 	painter := raster.NewRGBAPainter(dc.im)
 	painter.SetColor(dc.color)
