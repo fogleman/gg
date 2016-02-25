@@ -459,6 +459,20 @@ func (dc *Context) DrawCircle(x, y, r float64) {
 	dc.DrawEllipticalArc(x, y, r, r, 0, 2*math.Pi)
 }
 
+func (dc *Context) DrawRegularPolygon(n int, x, y, r, rotation float64) {
+	angle := 2 * math.Pi / float64(n)
+	rotation -= math.Pi / 2
+	if n%2 == 0 {
+		rotation += angle / 2
+	}
+	dc.NewSubPath()
+	for i := 0; i < n; i++ {
+		a := rotation + angle*float64(i)
+		dc.LineTo(x+r*math.Cos(a), y+r*math.Sin(a))
+	}
+	dc.ClosePath()
+}
+
 // DrawImage draws the specified image at the specified point.
 // Currently, rotation and scaling transforms are not supported.
 func (dc *Context) DrawImage(im image.Image, x, y int) {
