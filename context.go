@@ -425,10 +425,8 @@ func (dc *Context) ClipPreserve() {
 	if dc.mask == nil {
 		dc.mask = clip
 	} else {
-		r := image.Rect(0, 0, dc.width, dc.height)
-		mask := image.NewAlpha(r)
-		draw.DrawMask(mask, r, clip, image.ZP, dc.mask, image.ZP, draw.Over)
-		draw.DrawMask(mask, r, dc.mask, image.ZP, clip, image.ZP, draw.Over)
+		mask := image.NewAlpha(image.Rect(0, 0, dc.width, dc.height))
+		draw.DrawMask(mask, mask.Bounds(), clip, image.ZP, dc.mask, image.ZP, draw.Over)
 		dc.mask = mask
 	}
 }
