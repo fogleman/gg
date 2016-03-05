@@ -7,7 +7,9 @@ func main() {
 	dc := gg.NewContext(S, S)
 	dc.SetRGB(1, 1, 1)
 	dc.Clear()
-	dc.LoadFontFace("/Library/Fonts/Impact.ttf", 96)
+	if err := dc.LoadFontFace("/Library/Fonts/Impact.ttf", 96); err != nil {
+		panic(err)
+	}
 	dc.SetRGB(0, 0, 0)
 	s := "ONE DOES NOT SIMPLY"
 	n := 6 // "stroke" size

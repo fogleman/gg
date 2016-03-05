@@ -555,14 +555,13 @@ func (dc *Context) SetFontFace(fontFace font.Face) {
 	dc.fontFace = fontFace
 }
 
-func (dc *Context) LoadFontFace(path string, points float64) {
-	if face, err := loadFontFace(path, points); err == nil {
+func (dc *Context) LoadFontFace(path string, points float64) error {
+	face, err := loadFontFace(path, points)
+	if err == nil {
 		dc.fontFace = face
 		dc.fontHeight = points * 72 / 96
-	} else {
-		dc.fontFace = basicfont.Face7x13
-		dc.fontHeight = 13
-	}
+	} 
+	return err
 }
 
 func (dc *Context) drawString(im *image.RGBA, s string, x, y float64) {

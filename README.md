@@ -91,7 +91,7 @@ DrawStringWrapped(s string, x, y, ax, ay, width, lineSpacing float64, align Alig
 MeasureString(s string) (w, h float64)
 WordWrap(s string, w float64) []string
 SetFontFace(fontFace font.Face)
-LoadFontFace(path string, points float64)
+LoadFontFace(path string, points float64) error
 ```
 
 ## Color Functions
