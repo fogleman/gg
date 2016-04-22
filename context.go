@@ -585,9 +585,9 @@ func (dc *Context) DrawString(s string, x, y float64) {
 // text. Use ax=0.5, ay=0.5 to center the text at the specified point.
 func (dc *Context) DrawStringAnchored(s string, x, y, ax, ay float64) {
 	w, h := dc.MeasureString(s)
+	x, y = dc.TransformPoint(x, y)
 	x -= ax * w
 	y += ay * h
-	x, y = dc.TransformPoint(x, y)
 	if dc.mask == nil {
 		dc.drawString(dc.im, s, x, y)
 	} else {
