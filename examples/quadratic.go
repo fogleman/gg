@@ -47,7 +47,7 @@ func main() {
 	dc.Stroke()
 
 	dc.LoadFontFace("/Library/Fonts/Arial.ttf", 200)
-	dc.DrawStringAnchored("G", -5, 5, 0.5, 0.5)
+	dc.DrawStringAnchored("g", -5, 5, 0.5, 0.5)
 	dc.DrawStringAnchored("G", 5, -5, 0.5, 0.5)
 
 	dc.SavePNG("out.png")
