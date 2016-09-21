@@ -458,16 +458,18 @@ func (dc *Context) DrawLine(x1, y1, x2, y2 float64) {
 }
 
 func (dc *Context) DrawRectangle(x, y, w, h float64) {
+	dc.NewSubPath()
 	dc.MoveTo(x, y)
 	dc.LineTo(x+w, y)
 	dc.LineTo(x+w, y+h)
 	dc.LineTo(x, y+h)
-	dc.LineTo(x, y)
+	dc.ClosePath()
 }
 
 func (dc *Context) DrawRoundedRectangle(x, y, w, h, r float64) {
 	x0, x1, x2, x3 := x, x+r, x+w-r, x+w
 	y0, y1, y2, y3 := y, y+r, y+h-r, y+h
+	dc.NewSubPath()
 	dc.MoveTo(x1, y0)
 	dc.LineTo(x2, y0)
 	dc.DrawArc(x2, y1, r, Radians(270), Radians(360))
@@ -477,6 +479,7 @@ func (dc *Context) DrawRoundedRectangle(x, y, w, h, r float64) {
 	dc.DrawArc(x1, y2, r, Radians(90), Radians(180))
 	dc.LineTo(x0, y1)
 	dc.DrawArc(x1, y1, r, Radians(180), Radians(270))
+	dc.ClosePath()
 }
 
 func (dc *Context) DrawEllipticalArc(x, y, rx, ry, angle1, angle2 float64) {
@@ -494,7 +497,7 @@ func (dc *Context) DrawEllipticalArc(x, y, rx, ry, angle1, angle2 float64) {
 		y2 := y + ry*math.Sin(a2)
 		cx := 2*x1 - x0/2 - x2/2
 		cy := 2*y1 - y0/2 - y2/2
-		if i == 0 {
+		if i == 0 && !dc.hasCurrent {
 			dc.MoveTo(x0, y0)
 		}
 		dc.QuadraticTo(cx, cy, x2, y2)
@@ -502,7 +505,9 @@ func (dc *Context) DrawEllipticalArc(x, y, rx, ry, angle1, angle2 float64) {
 }
 
 func (dc *Context) DrawEllipse(x, y, rx, ry float64) {
+	dc.NewSubPath()
 	dc.DrawEllipticalArc(x, y, rx, ry, 0, 2*math.Pi)
+	dc.ClosePath()
 }
 
 func (dc *Context) DrawArc(x, y, r, angle1, angle2 float64) {
@@ -510,7 +515,9 @@ func (dc *Context) DrawArc(x, y, r, angle1, angle2 float64) {
 }
 
 func (dc *Context) DrawCircle(x, y, r float64) {
+	dc.NewSubPath()
 	dc.DrawEllipticalArc(x, y, r, r, 0, 2*math.Pi)
+	dc.ClosePath()
 }
 
 func (dc *Context) DrawRegularPolygon(n int, x, y, r, rotation float64) {
@@ -560,7 +567,7 @@ func (dc *Context) LoadFontFace(path string, points float64) error {
 	if err == nil {
 		dc.fontFace = face
 		dc.fontHeight = points * 72 / 96
-	} 
+	}
 	return err
 }
 
