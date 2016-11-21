@@ -36,9 +36,6 @@ type Gradient interface {
 // Linear Gradient
 type linearGradient struct {
 	x0, y0, x1, y1 float64
-	dx, dy         float64
-	mag            float64
-	px0, py0       float64
 	stops          stops
 }
 
@@ -48,8 +45,8 @@ func (g *linearGradient) ColorAt(x, y int) color.Color {
 	}
 
 	fx, fy := float64(x), float64(y)
-	x0, y0 := g.x0, g.y0
-	dx, dy := g.dx, g.dy
+	x0, y0, x1, y1 := g.x0, g.y0, g.x1, g.y1
+	dx, dy := x1-x0, y1-y0
 
 	// Horizontal
 	if dy == 0 && dx != 0 {
@@ -61,15 +58,15 @@ func (g *linearGradient) ColorAt(x, y int) color.Color {
 		return getColor((fy-y0)/dy, g.stops)
 	}
 
-	px0, py0 := g.px0, g.py0
-	mag := g.mag
-
-	s0 := (px0-x0)*(fy-y0) - (py0-y0)*(fx-x0)
-	if s0 > 0 {
+	// Dot product
+	s0 := dx*(fx-x0) + dy*(fy-y0)
+	if s0 < 0 {
 		return g.stops[0].color
 	}
-	u := ((fx-x0)*(px0-x0) + (fy-y0)*(py0-y0)) / (mag * mag)
-	x2, y2 := x0+u*(px0-x0), y0+u*(py0-y0)
+	// Calculate distance to (x0,y0) alone (x0,y0)->(x1,y1)
+	mag := math.Hypot(dx, dy)
+	u := ((fx-x0)*-dy + (fy-y0)*dx) / (mag * mag)
+	x2, y2 := x0+u*-dy, y0+u*dx
 	d := math.Hypot(fx-x2, fy-y2) / mag
 	return getColor(d, g.stops)
 }
@@ -80,15 +77,9 @@ func (g *linearGradient) AddColorStop(offset float64, color color.Color) {
 }
 
 func NewLinearGradient(x0, y0, x1, y1 float64) Gradient {
-	dx, dy := x1-x0, y1-y0
-	mag := math.Hypot(dx, dy)
-	px0, py0 := x0-dy, y0+dx
 	g := &linearGradient{
 		x0: x0, y0: y0,
 		x1: x1, y1: y1,
-		dx: dx, dy: dy,
-		px0: px0, py0: py0,
-		mag: mag,
 	}
 	return g
 }
