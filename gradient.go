@@ -84,6 +84,83 @@ func NewLinearGradient(x0, y0, x1, y1 float64) Gradient {
 	return g
 }
 
+// Radial Gradient
+type circle struct {
+	x, y, r float64
+}
+
+type radialGradient struct {
+	c0, c1, cd circle
+	a, inva    float64
+	mindr      float64
+	stops      stops
+}
+
+func dot3(x0, y0, z0, x1, y1, z1 float64) float64 {
+	return x0*x1 + y0*y1 + z0*z1
+}
+
+func (g *radialGradient) ColorAt(x, y int) color.Color {
+	if len(g.stops) == 0 {
+		return color.Transparent
+	}
+
+	// copy from pixman's pixman-radial-gradient.c
+
+	dx, dy := float64(x)+0.5-g.c0.x, float64(y)+0.5-g.c0.y
+	b := dot3(dx, dy, g.c0.r, g.cd.x, g.cd.y, g.cd.r)
+	c := dot3(dx, dy, -g.c0.r, dx, dy, g.c0.r)
+
+	if g.a == 0 {
+		if b == 0 {
+			return color.Transparent
+		}
+		t := 2 * c / b
+		if t*g.cd.r >= g.mindr {
+			return getColor(t, g.stops)
+		}
+		return color.Transparent
+	}
+
+	discr := dot3(b, g.a, 0, b, -c, 0)
+	if discr >= 0 {
+		sqrtdiscr := math.Sqrt(discr)
+		t0 := (b + sqrtdiscr) * g.inva
+		t1 := (b - sqrtdiscr) * g.inva
+
+		if t0*g.cd.r >= g.mindr {
+			return getColor(t0, g.stops)
+		} else if t1*g.cd.r >= g.mindr {
+			return getColor(t1, g.stops)
+		}
+	}
+
+	return color.Transparent
+}
+
+func (g *radialGradient) AddColorStop(offset float64, color color.Color) {
+	g.stops = append(g.stops, stop{pos: offset, color: color})
+	sort.Sort(g.stops)
+}
+
+func NewRadialGradient(x0, y0, r0, x1, y1, r1 float64) Gradient {
+	c0 := circle{x0, y0, r0}
+	c1 := circle{x1, y1, r1}
+	cd := circle{x1 - x0, y1 - y0, r1 - r0}
+	a := dot3(cd.x, cd.y, -cd.r, cd.x, cd.y, cd.r)
+	inva := 1 / a
+	mindr := -c0.r
+	g := &radialGradient{
+		c0:    c0,
+		c1:    c1,
+		cd:    cd,
+		a:     a,
+		inva:  inva,
+		mindr: mindr,
+	}
+	return g
+}
+
 func getColor(pos float64, stops stops) color.Color {
 	if pos <= 0.0 || len(stops) == 1 {
 		return stops[0].color
