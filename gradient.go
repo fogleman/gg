@@ -115,7 +115,7 @@ func (g *radialGradient) ColorAt(x, y int) color.Color {
 		if b == 0 {
 			return color.Transparent
 		}
-		t := 2 * c / b
+		t := 0.5 * c / b
 		if t*g.cd.r >= g.mindr {
 			return getColor(t, g.stops)
 		}
@@ -148,7 +148,10 @@ func NewRadialGradient(x0, y0, r0, x1, y1, r1 float64) Gradient {
 	c1 := circle{x1, y1, r1}
 	cd := circle{x1 - x0, y1 - y0, r1 - r0}
 	a := dot3(cd.x, cd.y, -cd.r, cd.x, cd.y, cd.r)
-	inva := 1 / a
+	var inva float64
+	if a != 0 {
+		inva = 1.0 / a
+	}
 	mindr := -c0.r
 	g := &radialGradient{
 		c0:    c0,
