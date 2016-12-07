@@ -45,25 +45,27 @@ const (
 )
 
 type Context struct {
-	width      int
-	height     int
-	im         *image.RGBA
-	mask       *image.Alpha
-	color      color.Color
-	strokePath raster.Path
-	fillPath   raster.Path
-	start      Point
-	current    Point
-	hasCurrent bool
-	dashes     []float64
-	lineWidth  float64
-	lineCap    LineCap
-	lineJoin   LineJoin
-	fillRule   FillRule
-	fontFace   font.Face
-	fontHeight float64
-	matrix     Matrix
-	stack      []*Context
+	width         int
+	height        int
+	im            *image.RGBA
+	mask          *image.Alpha
+	color         color.Color
+	fillPattern   Pattern
+	strokePattern Pattern
+	strokePath    raster.Path
+	fillPath      raster.Path
+	start         Point
+	current       Point
+	hasCurrent    bool
+	dashes        []float64
+	lineWidth     float64
+	lineCap       LineCap
+	lineJoin      LineJoin
+	fillRule      FillRule
+	fontFace      font.Face
+	fontHeight    float64
+	matrix        Matrix
+	stack         []*Context
 }
 
 // NewContext creates a new image.RGBA with the specified width and height
@@ -172,9 +174,25 @@ func (dc *Context) SetFillRuleEvenOdd() {
 
 // Color Setters
 
+func (dc *Context) setFillAndStrokeColor(c color.Color) {
+	dc.color = c
+	dc.fillPattern = NewSolidPattern(c)
+	dc.strokePattern = NewSolidPattern(c)
+}
+
+// SetFillStyle sets current fill style
+func (dc *Context) SetFillStyle(pattern Pattern) {
+	dc.fillPattern = pattern
+}
+
+// SetStrokeStyle sets current stroke style
+func (dc *Context) SetStrokeStyle(pattern Pattern) {
+	dc.strokePattern = pattern
+}
+
 // SetColor sets the current color.
 func (dc *Context) SetColor(c color.Color) {
-	dc.color = c
+	dc.setFillAndStrokeColor(c)
 }
 
 // SetHexColor sets the current color using a hex string. The leading pound
@@ -189,6 +207,7 @@ func (dc *Context) SetHexColor(x string) {
 // 255, inclusive.
 func (dc *Context) SetRGBA255(r, g, b, a int) {
 	dc.color = color.NRGBA{uint8(r), uint8(g), uint8(b), uint8(a)}
+	dc.setFillAndStrokeColor(dc.color)
 }
 
 // SetRGB255 sets the current color. r, g, b values should be between 0 and 255,
@@ -206,6 +225,7 @@ func (dc *Context) SetRGBA(r, g, b, a float64) {
 		uint8(b * 255),
 		uint8(a * 255),
 	}
+	dc.setFillAndStrokeColor(dc.color)
 }
 
 // SetRGB sets the current color. r, g, b values should be between 0 and 1,
@@ -372,13 +392,13 @@ func (dc *Context) fill(painter raster.Painter) {
 // operation.
 func (dc *Context) StrokePreserve() {
 	if dc.mask == nil {
-		painter := raster.NewRGBAPainter(dc.im)
-		painter.SetColor(dc.color)
+		painter := newPatternPainter(dc.im)
+		painter.setPattern(dc.strokePattern)
 		dc.stroke(painter)
 	} else {
 		im := image.NewRGBA(image.Rect(0, 0, dc.width, dc.height))
-		painter := raster.NewRGBAPainter(im)
-		painter.SetColor(dc.color)
+		painter := newPatternPainter(im)
+		painter.setPattern(dc.strokePattern)
 		dc.stroke(painter)
 		draw.DrawMask(dc.im, dc.im.Bounds(), im, image.ZP, dc.mask, image.ZP, draw.Over)
 	}
@@ -396,13 +416,13 @@ func (dc *Context) Stroke() {
 // are implicity closed. The path is preserved after this operation.
 func (dc *Context) FillPreserve() {
 	if dc.mask == nil {
-		painter := raster.NewRGBAPainter(dc.im)
-		painter.SetColor(dc.color)
+		painter := newPatternPainter(dc.im)
+		painter.setPattern(dc.fillPattern)
 		dc.fill(painter)
 	} else {
 		im := image.NewRGBA(image.Rect(0, 0, dc.width, dc.height))
-		painter := raster.NewRGBAPainter(im)
-		painter.SetColor(dc.color)
+		painter := newPatternPainter(im)
+		painter.setPattern(dc.fillPattern)
 		dc.fill(painter)
 		draw.DrawMask(dc.im, dc.im.Bounds(), im, image.ZP, dc.mask, image.ZP, draw.Over)
 	}
