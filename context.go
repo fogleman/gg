@@ -4,14 +4,15 @@ package gg
 import (
 	"image"
 	"image/color"
-	"image/draw"
 	"image/png"
 	"io"
 	"math"
 
 	"github.com/golang/freetype/raster"
+	"golang.org/x/image/draw"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/basicfont"
+	"golang.org/x/image/math/f64"
 )
 
 type LineCap int
@@ -567,12 +568,17 @@ func (dc *Context) DrawImageAnchored(im image.Image, x, y int, ax, ay float64) {
 	s := im.Bounds().Size()
 	x -= int(ax * float64(s.X))
 	y -= int(ay * float64(s.Y))
-	p := image.Pt(x, y)
-	r := image.Rectangle{p, p.Add(s)}
+	transformer := draw.BiLinear
+	fx, fy := float64(x), float64(y)
+	m := dc.matrix.Translate(fx, fy)
+	s2d := f64.Aff3{m.XX, m.XY, m.X0, m.YX, m.YY, m.Y0}
 	if dc.mask == nil {
-		draw.Draw(dc.im, r, im, image.ZP, draw.Over)
+		transformer.Transform(dc.im, s2d, im, im.Bounds(), draw.Over, nil)
 	} else {
-		draw.DrawMask(dc.im, r, im, image.ZP, dc.mask, p, draw.Over)
+		transformer.Transform(dc.im, s2d, im, im.Bounds(), draw.Over, &draw.Options{
+			DstMask:  dc.mask,
+			DstMaskP: image.ZP,
+		})
 	}
 }
 
