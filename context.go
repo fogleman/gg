@@ -45,6 +45,11 @@ const (
 	AlignRight
 )
 
+var (
+	defaultFillStyle   = NewSolidPattern(color.White)
+	defaultStrokeStyle = NewSolidPattern(color.Black)
+)
+
 type Context struct {
 	width         int
 	height        int
@@ -85,15 +90,17 @@ func NewContextForImage(im image.Image) *Context {
 // No copy is made.
 func NewContextForRGBA(im *image.RGBA) *Context {
 	return &Context{
-		width:      im.Bounds().Size().X,
-		height:     im.Bounds().Size().Y,
-		im:         im,
-		color:      color.Transparent,
-		lineWidth:  1,
-		fillRule:   FillRuleWinding,
-		fontFace:   basicfont.Face7x13,
-		fontHeight: 13,
-		matrix:     Identity(),
+		width:         im.Bounds().Size().X,
+		height:        im.Bounds().Size().Y,
+		im:            im,
+		color:         color.Transparent,
+		fillPattern:   defaultFillStyle,
+		strokePattern: defaultStrokeStyle,
+		lineWidth:     1,
+		fillRule:      FillRuleWinding,
+		fontFace:      basicfont.Face7x13,
+		fontHeight:    13,
+		matrix:        Identity(),
 	}
 }
 
@@ -183,6 +190,10 @@ func (dc *Context) setFillAndStrokeColor(c color.Color) {
 
 // SetFillStyle sets current fill style
 func (dc *Context) SetFillStyle(pattern Pattern) {
+	// if pattern is SolidPattern, also change dc.color(for dc.Clear, dc.drawString)
+	if fillStyle, ok := pattern.(*solidPattern); ok {
+		dc.color = fillStyle.color
+	}
 	dc.fillPattern = pattern
 }
 
@@ -191,7 +202,7 @@ func (dc *Context) SetStrokeStyle(pattern Pattern) {
 	dc.strokePattern = pattern
 }
 
-// SetColor sets the current color.
+// SetColor sets the current color(for both fill and stroke).
 func (dc *Context) SetColor(c color.Color) {
 	dc.setFillAndStrokeColor(c)
 }
