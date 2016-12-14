@@ -483,6 +483,22 @@ func (dc *Context) Clear() {
 	draw.Draw(dc.im, dc.im.Bounds(), src, image.ZP, draw.Src)
 }
 
+// SetPixel sets the color of the specified pixel using the current color.
+func (dc *Context) SetPixel(x, y int) {
+	dc.im.Set(x, y, dc.color)
+}
+
+// DrawPoint is like DrawCircle but ensures that a circle of the specified
+// size is drawn regardless of the current transformation matrix. The position
+// is still transformed, but not the shape of the point.
+func (dc *Context) DrawPoint(x, y, r float64) {
+	dc.Push()
+	tx, ty := dc.TransformPoint(x, y)
+	dc.Identity()
+	dc.DrawCircle(tx, ty, r)
+	dc.Pop()
+}
+
 func (dc *Context) DrawLine(x1, y1, x2, y2 float64) {
 	dc.MoveTo(x1, y1)
 	dc.LineTo(x2, y2)
