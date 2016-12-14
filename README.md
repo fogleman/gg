@@ -173,8 +173,6 @@ ClipPreserve()
 ResetClip()
 ```
 
-Note: As currently implemented, clipping isn't very fast, but it works.
-
 ## Helper Functions
 
 Sometimes you just don't want to write these yourself.

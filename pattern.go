@@ -65,8 +65,9 @@ func NewSurfacePattern(im image.Image, op RepeatOp) Pattern {
 }
 
 type patternPainter struct {
-	im *image.RGBA
-	p  Pattern
+	im   *image.RGBA
+	mask *image.Alpha
+	p    Pattern
 }
 
 // Paint satisfies the Painter interface.
@@ -88,15 +89,20 @@ func (r *patternPainter) Paint(ss []raster.Span, done bool) {
 		if s.X0 >= s.X1 {
 			continue
 		}
-		ma := s.Alpha
 		const m = 1<<16 - 1
 		y := s.Y - r.im.Rect.Min.Y
 		x0 := s.X0 - r.im.Rect.Min.X
-		// x1 := x0 + s.X1 - s.X0
 		// RGBAPainter.Paint() in $GOPATH/src/github.com/golang/freetype/raster/paint.go
 		i0 := (s.Y-r.im.Rect.Min.Y)*r.im.Stride + (s.X0-r.im.Rect.Min.X)*4
 		i1 := i0 + (s.X1-s.X0)*4
 		for i, x := i0, x0; i < i1; i, x = i+4, x+1 {
+			ma := s.Alpha
+			if r.mask != nil {
+				ma = ma * uint32(r.mask.AlphaAt(x, y).A) / 255
+				if ma == 0 {
+					continue
+				}
+			}
 			c := r.p.ColorAt(x, y)
 			cr, cg, cb, ca := c.RGBA()
 			dr := uint32(r.im.Pix[i+0])
@@ -112,10 +118,6 @@ func (r *patternPainter) Paint(ss []raster.Span, done bool) {
 	}
 }
 
-func (r *patternPainter) setPattern(pattern Pattern) {
-	r.p = pattern
-}
-
-func newPatternPainter(im *image.RGBA) *patternPainter {
-	return &patternPainter{im: im}
+func newPatternPainter(im *image.RGBA, mask *image.Alpha, p Pattern) *patternPainter {
+	return &patternPainter{im, mask, p}
 }

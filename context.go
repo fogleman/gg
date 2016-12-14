@@ -402,17 +402,8 @@ func (dc *Context) fill(painter raster.Painter) {
 // line cap, line join and dash settings. The path is preserved after this
 // operation.
 func (dc *Context) StrokePreserve() {
-	if dc.mask == nil {
-		painter := newPatternPainter(dc.im)
-		painter.setPattern(dc.strokePattern)
-		dc.stroke(painter)
-	} else {
-		im := image.NewRGBA(image.Rect(0, 0, dc.width, dc.height))
-		painter := newPatternPainter(im)
-		painter.setPattern(dc.strokePattern)
-		dc.stroke(painter)
-		draw.DrawMask(dc.im, dc.im.Bounds(), im, image.ZP, dc.mask, image.ZP, draw.Over)
-	}
+	painter := newPatternPainter(dc.im, dc.mask, dc.strokePattern)
+	dc.stroke(painter)
 }
 
 // Stroke strokes the current path with the current color, line width,
@@ -426,17 +417,8 @@ func (dc *Context) Stroke() {
 // FillPreserve fills the current path with the current color. Open subpaths
 // are implicity closed. The path is preserved after this operation.
 func (dc *Context) FillPreserve() {
-	if dc.mask == nil {
-		painter := newPatternPainter(dc.im)
-		painter.setPattern(dc.fillPattern)
-		dc.fill(painter)
-	} else {
-		im := image.NewRGBA(image.Rect(0, 0, dc.width, dc.height))
-		painter := newPatternPainter(im)
-		painter.setPattern(dc.fillPattern)
-		dc.fill(painter)
-		draw.DrawMask(dc.im, dc.im.Bounds(), im, image.ZP, dc.mask, image.ZP, draw.Over)
-	}
+	painter := newPatternPainter(dc.im, dc.mask, dc.fillPattern)
+	dc.fill(painter)
 }
 
 // Fill fills the current path with the current color. Open subpaths
