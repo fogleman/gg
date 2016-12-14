@@ -52,6 +52,7 @@ Ever used a graphics library that didn't have functions for drawing rectangles
 or circles? What a pain!
 
 ```go
+DrawPoint(x, y, r float64)
 DrawLine(x1, y1, x2, y2 float64)
 DrawRectangle(x, y, w, h float64)
 DrawRoundedRectangle(x, y, w, h, r float64)
@@ -62,6 +63,7 @@ DrawEllipticalArc(x, y, rx, ry, angle1, angle2 float64)
 DrawRegularPolygon(n int, x, y, r, rotation float64)
 DrawImage(im image.Image, x, y int)
 DrawImageAnchored(im image.Image, x, y int, ax, ay float64)
+SetPixel(x, y int)
 
 MoveTo(x, y float64)
 LineTo(x, y float64)
@@ -115,6 +117,19 @@ SetLineCap(lineCap LineCap)
 SetLineJoin(lineJoin LineJoin)
 SetDash(dashes ...float64)
 SetFillRule(fillRule FillRule)
+```
+
+## Gradients & Patterns
+
+`gg` supports linear and radial gradients and surface patterns. You can also implement your own patterns.
+
+```go
+SetFillStyle(pattern Pattern)
+SetStrokeStyle(pattern Pattern)
+NewSolidPattern(color color.Color)
+NewLinearGradient(x0, y0, x1, y1 float64)
+NewRadialGradient(x0, y0, r0, x1, y1, r1 float64)
+NewSurfacePattern(im image.Image, op RepeatOp)
 ```
 
 ## Transformation Functions
@@ -173,13 +188,6 @@ SavePNG(path string, im image.Image) error
 ```
 
 ![Separator](http://i.imgur.com/fsUvnPB.png)
-
-## What's Missing?
-
-If you need any of the features below, I recommend using `cairo` instead. Or
-even better, implement it and submit a pull request!
-
-- Gradients / Patterns
 
 ## How Do it Do?
 
