@@ -594,7 +594,7 @@ func (dc *Context) SetFontFace(fontFace font.Face) {
 }
 
 func (dc *Context) LoadFontFace(path string, points float64) error {
-	face, err := loadFontFace(path, points)
+	face, err := LoadFontFace(path, points)
 	if err == nil {
 		dc.fontFace = face
 		dc.fontHeight = points * 72 / 96
