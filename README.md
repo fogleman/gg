@@ -6,7 +6,11 @@
 
 ## Installation
 
-    go get github.com/fogleman/gg
+    go get -u github.com/fogleman/gg
+
+Alternatively, you may use gopkg.in to grab a specific major-version:
+
+    go get -u gopkg.in/fogleman/gg.v1
 
 ## GoDoc
 
