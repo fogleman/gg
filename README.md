@@ -155,8 +155,6 @@ It is often desired to rotate or scale about a point that is not the origin. The
 
 `InvertY` is provided in case Y should increase from bottom to top vs. the default top to bottom.
 
-Note: transforms do not currently affect `DrawImage` or `DrawString`.
-
 ## Stack Functions
 
 Save and restore the state of the context. These can be nested.
