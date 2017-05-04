@@ -12,7 +12,7 @@ Alternatively, you may use gopkg.in to grab a specific major-version:
 
     go get -u gopkg.in/fogleman/gg.v1
 
-## GoDoc
+## Documentation
 
 https://godoc.org/github.com/fogleman/gg
 
@@ -188,12 +188,6 @@ SavePNG(path string, im image.Image) error
 ```
 
 ![Separator](http://i.imgur.com/fsUvnPB.png)
-
-## How Do it Do?
-
-`gg` is mostly a wrapper around `github.com/golang/freetype/raster`. The goal
-is to provide some more functionality and a nicer API that will suffice for
-most use cases.
 
 ## Another Example
 
