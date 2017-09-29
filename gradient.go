@@ -189,7 +189,7 @@ func colorLerp(c0, c1 color.Color, t float64) color.Color {
 	r0, g0, b0, a0 := c0.RGBA()
 	r1, g1, b1, a1 := c1.RGBA()
 
-	return color.NRGBA{
+	return color.RGBA{
 		lerp(r0, r1, t),
 		lerp(g0, g1, t),
 		lerp(b0, b1, t),
