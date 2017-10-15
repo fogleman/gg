@@ -115,3 +115,35 @@ func LoadFontFace(path string, points float64) (font.Face, error) {
 	})
 	return face, nil
 }
+
+// imin returns the minimum between two integers
+func imin(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+// imax returns the maximum between two integers
+func imax(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+// min returns the minimum between two float point numbers
+func min(a, b float64) float64 {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+// max returns the maximum between two float point numbers
+func max(a, b float64) float64 {
+	if a > b {
+		return a
+	}
+	return b
+}
