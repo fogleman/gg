@@ -606,6 +606,10 @@ func (dc *Context) LoadFontFace(path string, points float64) error {
 	return err
 }
 
+func (dc *Context) FontHeight() float64 {
+	return dc.fontHeight
+}
+
 func (dc *Context) drawString(im *image.RGBA, s string, x, y float64) {
 	d := &font.Drawer{
 		Dst:  im,
