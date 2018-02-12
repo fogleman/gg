@@ -2,6 +2,7 @@
 package gg
 
 import (
+	"errors"
 	"image"
 	"image/color"
 	"image/png"
@@ -443,6 +444,26 @@ func (dc *Context) ClipPreserve() {
 		draw.DrawMask(mask, mask.Bounds(), clip, image.ZP, dc.mask, image.ZP, draw.Over)
 		dc.mask = mask
 	}
+}
+
+// SetMask allows you to directly set the *image.Alpha to be used as a clipping
+// mask. It must be the same size as the context, else an error is returned
+// and the mask is unchanged.
+func (dc *Context) SetMask(mask *image.Alpha) error {
+	if mask.Bounds().Size() != dc.im.Bounds().Size() {
+		return errors.New("mask size must match context size")
+	}
+	dc.mask = mask
+	return nil
+}
+
+// AsMask returns an *image.Alpha representing the alpha channel of this
+// context. This can be useful for advanced clipping operations where you first
+// render the mask geometry and then use it as a mask.
+func (dc *Context) AsMask() *image.Alpha {
+	mask := image.NewAlpha(dc.im.Bounds())
+	draw.Draw(mask, dc.im.Bounds(), dc.im, image.ZP, draw.Src)
+	return mask
 }
 
 // Clip updates the clipping region by intersecting the current
