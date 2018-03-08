@@ -548,8 +548,12 @@ func (dc *Context) DrawEllipticalArc(x, y, rx, ry, angle1, angle2 float64) {
 		y2 := y + ry*math.Sin(a2)
 		cx := 2*x1 - x0/2 - x2/2
 		cy := 2*y1 - y0/2 - y2/2
-		if i == 0 && !dc.hasCurrent {
-			dc.MoveTo(x0, y0)
+		if i == 0 {
+			if dc.hasCurrent {
+				dc.LineTo(x0, y0)
+			} else {
+				dc.MoveTo(x0, y0)
+			}
 		}
 		dc.QuadraticTo(cx, cy, x2, y2)
 	}
