@@ -698,7 +698,7 @@ func (dc *Context) DrawStringWrapped(s string, x, y, ax, ay, width, lineSpacing 
 	h := float64(len(lines)) * dc.fontHeight * lineSpacing
 	h -= (lineSpacing - 1) * dc.fontHeight
 	x -= ax * width
-	y -= ay * h
+	y += ay * h
 	switch align {
 	case AlignLeft:
 		ax = 0
@@ -709,7 +709,7 @@ func (dc *Context) DrawStringWrapped(s string, x, y, ax, ay, width, lineSpacing 
 		ax = 1
 		x += width
 	}
-	ay = 1
+	ay = 0
 	for _, line := range lines {
 		dc.DrawStringAnchored(line, x, y, ax, ay)
 		y += dc.fontHeight * lineSpacing
