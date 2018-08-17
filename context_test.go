@@ -292,3 +292,21 @@ func TestDashes(t *testing.T) {
 	saveImage(dc, "TestDashes")
 	checkHash(t, dc, "d188069c69dcc3970edfac80f552b53c")
 }
+
+func BenchmarkCircles(b *testing.B) {
+	dc := NewContext(1000, 1000)
+	dc.SetRGB(1, 1, 1)
+	dc.Clear()
+	rnd := rand.New(rand.NewSource(99))
+	for i := 0; i < b.N; i++ {
+		x := rnd.Float64() * 1000
+		y := rnd.Float64() * 1000
+		dc.DrawCircle(x, y, 10)
+		if i%2 == 0 {
+			dc.SetRGB(0, 0, 0)
+		} else {
+			dc.SetRGB(1, 1, 1)
+		}
+		dc.Fill()
+	}
+}
