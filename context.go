@@ -54,6 +54,7 @@ var (
 type Context struct {
 	width         int
 	height        int
+	rasterizer    *raster.Rasterizer
 	im            *image.RGBA
 	mask          *image.Alpha
 	color         color.Color
@@ -90,9 +91,12 @@ func NewContextForImage(im image.Image) *Context {
 // NewContextForRGBA prepares a context for rendering onto the specified image.
 // No copy is made.
 func NewContextForRGBA(im *image.RGBA) *Context {
+	w := im.Bounds().Size().X
+	h := im.Bounds().Size().Y
 	return &Context{
-		width:         im.Bounds().Size().X,
-		height:        im.Bounds().Size().Y,
+		width:         w,
+		height:        h,
+		rasterizer:    raster.NewRasterizer(w, h),
 		im:            im,
 		color:         color.Transparent,
 		fillPattern:   defaultFillStyle,
@@ -381,8 +385,9 @@ func (dc *Context) stroke(painter raster.Painter) {
 		// that result in rendering issues
 		path = rasterPath(flattenPath(path))
 	}
-	r := raster.NewRasterizer(dc.width, dc.height)
+	r := dc.rasterizer
 	r.UseNonZeroWinding = true
+	r.Clear()
 	r.AddStroke(path, fix(dc.lineWidth), dc.capper(), dc.joiner())
 	r.Rasterize(painter)
 }
@@ -394,8 +399,9 @@ func (dc *Context) fill(painter raster.Painter) {
 		copy(path, dc.fillPath)
 		path.Add1(dc.start.Fixed())
 	}
-	r := raster.NewRasterizer(dc.width, dc.height)
+	r := dc.rasterizer
 	r.UseNonZeroWinding = dc.fillRule == FillRuleWinding
+	r.Clear()
 	r.AddPath(path)
 	r.Rasterize(painter)
 }
