@@ -2,11 +2,19 @@ package gg
 
 import (
 	"crypto/md5"
+	"flag"
 	"fmt"
 	"image/color"
 	"math/rand"
 	"testing"
 )
+
+var save bool
+
+func init() {
+	flag.BoolVar(&save, "save", false, "save PNG output for each test case")
+	flag.Parse()
+}
 
 func hash(dc *Context) string {
 	return fmt.Sprintf("%x", md5.Sum(dc.im.Pix))
@@ -20,7 +28,10 @@ func checkHash(t *testing.T, dc *Context, expected string) {
 }
 
 func saveImage(dc *Context, name string) error {
-	return SavePNG(name+".png", dc.Image())
+	if save {
+		return SavePNG(name+".png", dc.Image())
+	}
+	return nil
 }
 
 func TestBlank(t *testing.T) {
