@@ -101,6 +101,11 @@ func unfix(x fixed.Int26_6) float64 {
 	return 0
 }
 
+// LoadFontFace is a helper function to load the specified font file with
+// the specified point size. Note that the returned `font.Face` objects
+// are not thread safe and cannot be used in parallel across goroutines.
+// You can usually just use the Context.LoadFontFace function instead of
+// this package-level function.
 func LoadFontFace(path string, points float64) (font.Face, error) {
 	fontBytes, err := ioutil.ReadFile(path)
 	if err != nil {
