@@ -410,7 +410,19 @@ func (dc *Context) fill(painter raster.Painter) {
 // line cap, line join and dash settings. The path is preserved after this
 // operation.
 func (dc *Context) StrokePreserve() {
-	painter := newPatternPainter(dc.im, dc.mask, dc.strokePattern)
+	var painter raster.Painter
+	if dc.mask == nil {
+		if pattern, ok := dc.strokePattern.(*solidPattern); ok {
+			// with a nil mask and a solid color pattern, we can be more efficient
+			// TODO: refactor so we don't have to do this type assertion stuff?
+			p := raster.NewRGBAPainter(dc.im)
+			p.SetColor(pattern.color)
+			painter = p
+		}
+	}
+	if painter == nil {
+		painter = newPatternPainter(dc.im, dc.mask, dc.strokePattern)
+	}
 	dc.stroke(painter)
 }
 
@@ -425,7 +437,19 @@ func (dc *Context) Stroke() {
 // FillPreserve fills the current path with the current color. Open subpaths
 // are implicity closed. The path is preserved after this operation.
 func (dc *Context) FillPreserve() {
-	painter := newPatternPainter(dc.im, dc.mask, dc.fillPattern)
+	var painter raster.Painter
+	if dc.mask == nil {
+		if pattern, ok := dc.fillPattern.(*solidPattern); ok {
+			// with a nil mask and a solid color pattern, we can be more efficient
+			// TODO: refactor so we don't have to do this type assertion stuff?
+			p := raster.NewRGBAPainter(dc.im)
+			p.SetColor(pattern.color)
+			painter = p
+		}
+	}
+	if painter == nil {
+		painter = newPatternPainter(dc.im, dc.mask, dc.fillPattern)
+	}
 	dc.fill(painter)
 }
 
