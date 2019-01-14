@@ -496,6 +496,18 @@ func (dc *Context) AsMask() *image.Alpha {
 	return mask
 }
 
+// InvertMask inverts the alpha values in the current clipping mask such that
+// a fully transparent region becomes fully opaque and vice versa.
+func (dc *Context) InvertMask() {
+	if dc.mask == nil {
+		dc.mask = image.NewAlpha(dc.im.Bounds())
+	} else {
+		for i, a := range dc.mask.Pix {
+			dc.mask.Pix[i] = 255 - a
+		}
+	}
+}
+
 // Clip updates the clipping region by intersecting the current
 // clipping region with the current path as it would be filled by dc.Fill().
 // The path is cleared after this operation.
