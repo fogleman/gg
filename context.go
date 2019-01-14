@@ -8,6 +8,7 @@ import (
 	"image/png"
 	"io"
 	"math"
+	"strings"
 
 	"github.com/golang/freetype/raster"
 	"golang.org/x/image/draw"
@@ -737,8 +738,11 @@ func (dc *Context) DrawStringAnchored(s string, x, y, ax, ay float64) {
 // spacing and text alignment.
 func (dc *Context) DrawStringWrapped(s string, x, y, ax, ay, width, lineSpacing float64, align Align) {
 	lines := dc.WordWrap(s, width)
+
+	// sync h formula with MeasureMultilineString
 	h := float64(len(lines)) * dc.fontHeight * lineSpacing
 	h -= (lineSpacing - 1) * dc.fontHeight
+
 	x -= ax * width
 	y -= ay * h
 	switch align {
@@ -756,6 +760,29 @@ func (dc *Context) DrawStringWrapped(s string, x, y, ax, ay, width, lineSpacing 
 		dc.DrawStringAnchored(line, x, y, ax, ay)
 		y += dc.fontHeight * lineSpacing
 	}
+}
+
+func (dc *Context) MeasureMultilineString(s string, lineSpacing float64) (width, height float64) {
+	lines := strings.Split(s, "\n")
+
+	// sync h formula with DrawStringWrapped
+	height = float64(len(lines)) * dc.fontHeight * lineSpacing
+	height -= (lineSpacing - 1) * dc.fontHeight
+
+	d := &font.Drawer{
+		Face: dc.fontFace,
+	}
+
+	// max width from lines
+	for _, line := range lines {
+		adv := d.MeasureString(line)
+		currentWidth := float64(adv >> 6) // from gg.Context.MeasureString
+		if currentWidth > width {
+			width = currentWidth
+		}
+	}
+
+	return width, height
 }
 
 // MeasureString returns the rendered width and height of the specified text
