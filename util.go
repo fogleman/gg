@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image"
 	"image/draw"
+	"image/jpeg"
 	_ "image/jpeg"
 	"image/png"
 	"io/ioutil"
@@ -51,6 +52,28 @@ func SavePNG(path string, im image.Image) error {
 	}
 	defer file.Close()
 	return png.Encode(file, im)
+}
+
+func LoadJPG(path string) (image.Image, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	return jpeg.Decode(file)
+}
+
+func SaveJPG(path string, im image.Image, quality int) error {
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	var opt jpeg.Options
+	opt.Quality = quality
+
+	return jpeg.Encode(file, im, &opt)
 }
 
 func imageToRGBA(src image.Image) *image.RGBA {
