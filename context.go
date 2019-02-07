@@ -110,6 +110,15 @@ func NewContextForRGBA(im *image.RGBA) *Context {
 	}
 }
 
+// GetCurrentPoint will return the current point and if there is a current point.
+// The point will have been transformed by the context's transformation matrix.
+func (dc *Context) GetCurrentPoint() (Point, bool) {
+	if dc.hasCurrent {
+		return dc.current, true
+	}
+	return Point{}, false
+}
+
 // Image returns the image that has been drawn by this context.
 func (dc *Context) Image() image.Image {
 	return dc.im
