@@ -67,6 +67,7 @@ type Context struct {
 	current       Point
 	hasCurrent    bool
 	dashes        []float64
+	dashOffset    float64
 	lineWidth     float64
 	lineCap       LineCap
 	lineJoin      LineJoin
@@ -149,6 +150,12 @@ func (dc *Context) EncodePNG(w io.Writer) error {
 // alternating on and off lengths.
 func (dc *Context) SetDash(dashes ...float64) {
 	dc.dashes = dashes
+}
+
+// SetDashOffset sets the initial offset into the dash pattern to use when
+// stroking dashed paths.
+func (dc *Context) SetDashOffset(offset float64) {
+	dc.dashOffset = offset
 }
 
 func (dc *Context) SetLineWidth(lineWidth float64) {
@@ -389,7 +396,7 @@ func (dc *Context) joiner() raster.Joiner {
 func (dc *Context) stroke(painter raster.Painter) {
 	path := dc.strokePath
 	if len(dc.dashes) > 0 {
-		path = dashed(path, dc.dashes)
+		path = dashed(path, dc.dashes, dc.dashOffset)
 	} else {
 		// TODO: this is a temporary workaround to remove tiny segments
 		// that result in rendering issues

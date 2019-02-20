@@ -121,6 +121,7 @@ SetLineWidth(lineWidth float64)
 SetLineCap(lineCap LineCap)
 SetLineJoin(lineJoin LineJoin)
 SetDash(dashes ...float64)
+SetDashOffset(offset float64)
 SetFillRule(fillRule FillRule)
 ```
 

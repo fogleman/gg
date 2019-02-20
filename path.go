@@ -1,6 +1,8 @@
 package gg
 
 import (
+	"math"
+
 	"github.com/golang/freetype/raster"
 	"golang.org/x/image/math/fixed"
 )
@@ -57,7 +59,7 @@ func flattenPath(p raster.Path) [][]Point {
 	return result
 }
 
-func dashPath(paths [][]Point, dashes []float64) [][]Point {
+func dashPath(paths [][]Point, dashes []float64, offset float64) [][]Point {
 	var result [][]Point
 	if len(dashes) == 0 {
 		return paths
@@ -73,6 +75,27 @@ func dashPath(paths [][]Point, dashes []float64) [][]Point {
 		pathIndex := 1
 		dashIndex := 0
 		segmentLength := 0.0
+
+		// offset
+		if offset != 0 {
+			var totalLength float64
+			for _, dashLength := range dashes {
+				totalLength += dashLength
+			}
+			offset = math.Mod(offset, totalLength)
+			if offset < 0 {
+				offset += totalLength
+			}
+			for i, dashLength := range dashes {
+				offset -= dashLength
+				if offset < 0 {
+					dashIndex = i
+					segmentLength = dashLength + offset
+					break
+				}
+			}
+		}
+
 		var segment []Point
 		segment = append(segment, previous)
 		for pathIndex < len(path) {
@@ -135,6 +158,6 @@ func rasterPath(paths [][]Point) raster.Path {
 	return result
 }
 
-func dashed(path raster.Path, dashes []float64) raster.Path {
-	return rasterPath(dashPath(flattenPath(path), dashes))
+func dashed(path raster.Path, dashes []float64, offset float64) raster.Path {
+	return rasterPath(dashPath(flattenPath(path), dashes, offset))
 }
