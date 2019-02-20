@@ -585,8 +585,8 @@ func (dc *Context) DrawEllipticalArc(x, y, rx, ry, angle1, angle2 float64) {
 		a2 := angle1 + (angle2-angle1)*p2
 		x0 := x + rx*math.Cos(a1)
 		y0 := y + ry*math.Sin(a1)
-		x1 := x + rx*math.Cos(a1+(a2-a1)/2)
-		y1 := y + ry*math.Sin(a1+(a2-a1)/2)
+		x1 := x + rx*math.Cos((a1+a2)/2)
+		y1 := y + ry*math.Sin((a1+a2)/2)
 		x2 := x + rx*math.Cos(a2)
 		y2 := y + ry*math.Sin(a2)
 		cx := 2*x1 - x0/2 - x2/2
