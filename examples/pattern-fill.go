@@ -3,7 +3,7 @@ package main
 import "github.com/fogleman/gg"
 
 func main() {
-	im, err := gg.LoadPNG("examples/lenna.png")
+	im, err := gg.LoadPNG("examples/baboon.png")
 	if err != nil {
 		panic(err)
 	}
