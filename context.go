@@ -140,6 +140,11 @@ func (dc *Context) SavePNG(path string) error {
 	return SavePNG(path, dc.im)
 }
 
+// SaveJPG encodes the image as a JPG and writes it to disk.
+func (dc *Context) SaveJPG(path string, quality int) error {
+	return SaveJPG(path, dc.im, quality)
+}
+
 // EncodePNG encodes the image as a PNG and writes it to the provided io.Writer.
 func (dc *Context) EncodePNG(w io.Writer) error {
 	return png.Encode(w, dc.im)
