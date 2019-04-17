@@ -191,7 +191,7 @@ func TestPushPop(t *testing.T) {
 		dc.Pop()
 	}
 	saveImage(dc, "TestPushPop")
-	checkHash(t, dc, "e0d6724eb72033577811a55f7a642f6a")
+	checkHash(t, dc, "31e908ee1c2ea180da98fd5681a89d05")
 }
 
 func TestDrawStringWrapped(t *testing.T) {
