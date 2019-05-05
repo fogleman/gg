@@ -50,13 +50,25 @@ const (
 var (
 	defaultFillStyle   = NewSolidPattern(color.White)
 	defaultStrokeStyle = NewSolidPattern(color.Black)
+
+	defaultAlphaFillStyle   = NewSolidPattern(Gray16AlphaModel.Convert(color.Black))
+	defaultAlphaStrokeStyle = NewSolidPattern(Gray16AlphaModel.Convert(color.White))
+)
+
+//go:generate stringer -linecomment=true -type=painterMode
+type painterMode int
+
+const (
+	painterModeRGBA  painterMode = iota // RGBA
+	painterModeAlpha                    // Alpha
 )
 
 type Context struct {
 	width         int
 	height        int
 	rasterizer    *raster.Rasterizer
-	im            *image.RGBA
+	im            draw.Image
+	pm            painterMode
 	mask          *image.Alpha
 	color         color.Color
 	fillPattern   Pattern
@@ -84,10 +96,21 @@ func NewContext(width, height int) *Context {
 	return NewContextForRGBA(image.NewRGBA(image.Rect(0, 0, width, height)))
 }
 
-// NewContextForImage copies the specified image into a new image.RGBA
+// NewAlphaContext is like NewContext, except it creates a new image.Alpha.
+func NewAlphaContext(width, height int) *Context {
+	return NewContextForAlpha(image.NewAlpha(image.Rect(0, 0, width, height)))
+}
+
+// NewContextForImage copies the specified image into a new image
 // and prepares a context for rendering onto that image.
 func NewContextForImage(im image.Image) *Context {
 	return NewContextForRGBA(imageToRGBA(im))
+}
+
+// NewAlphaContextForImage copies the specified image into a new alpha image
+// and prepares a context for rendering onto that image.
+func NewAlphaContextForImage(im image.Image) *Context {
+	return NewContextForAlpha(imageToAlpha(im))
 }
 
 // NewContextForRGBA prepares a context for rendering onto the specified image.
@@ -100,9 +123,32 @@ func NewContextForRGBA(im *image.RGBA) *Context {
 		height:        h,
 		rasterizer:    raster.NewRasterizer(w, h),
 		im:            im,
+		pm:            painterModeRGBA,
 		color:         color.Transparent,
 		fillPattern:   defaultFillStyle,
 		strokePattern: defaultStrokeStyle,
+		lineWidth:     1,
+		fillRule:      FillRuleWinding,
+		fontFace:      basicfont.Face7x13,
+		fontHeight:    13,
+		matrix:        Identity(),
+	}
+}
+
+// NewContextForAlpha prepares a context for rendering onto the specified image.
+// No copy is made.
+func NewContextForAlpha(im *image.Alpha) *Context {
+	w := im.Bounds().Size().X
+	h := im.Bounds().Size().Y
+	return &Context{
+		width:         w,
+		height:        h,
+		rasterizer:    raster.NewRasterizer(w, h),
+		im:            im,
+		pm:            painterModeAlpha,
+		color:         color.Transparent,
+		fillPattern:   defaultAlphaFillStyle,
+		strokePattern: defaultAlphaStrokeStyle,
 		lineWidth:     1,
 		fillRule:      FillRuleWinding,
 		fontFace:      basicfont.Face7x13,
@@ -211,8 +257,15 @@ func (dc *Context) SetFillRuleEvenOdd() {
 
 func (dc *Context) setFillAndStrokeColor(c color.Color) {
 	dc.color = c
-	dc.fillPattern = NewSolidPattern(c)
-	dc.strokePattern = NewSolidPattern(c)
+	switch dc.pm {
+	case painterModeRGBA:
+		dc.fillPattern = NewSolidPattern(c)
+		dc.strokePattern = NewSolidPattern(c)
+	case painterModeAlpha:
+		gc := Gray16AlphaModel.Convert(c)
+		dc.fillPattern = NewSolidPattern(gc)
+		dc.strokePattern = NewSolidPattern(gc)
+	}
 }
 
 // SetFillStyle sets current fill style
@@ -433,17 +486,24 @@ func (dc *Context) fill(painter raster.Painter) {
 // operation.
 func (dc *Context) StrokePreserve() {
 	var painter raster.Painter
-	if dc.mask == nil {
-		if pattern, ok := dc.strokePattern.(*solidPattern); ok {
-			// with a nil mask and a solid color pattern, we can be more efficient
-			// TODO: refactor so we don't have to do this type assertion stuff?
-			p := raster.NewRGBAPainter(dc.im)
-			p.SetColor(pattern.color)
-			painter = p
+	switch dc.pm {
+	case painterModeRGBA:
+		im := dc.im.(*image.RGBA)
+		if dc.mask == nil {
+			if pattern, ok := dc.strokePattern.(*solidPattern); ok {
+				// with a nil mask and a solid color pattern, we can be more efficient
+				// TODO: refactor so we don't have to do this type assertion stuff?
+				p := raster.NewRGBAPainter(im)
+				p.SetColor(pattern.color)
+				painter = p
+			}
 		}
-	}
-	if painter == nil {
-		painter = newPatternPainter(dc.im, dc.mask, dc.strokePattern)
+		if painter == nil {
+			painter = newPatternPainterRGBA(im, dc.mask, dc.strokePattern)
+		}
+	case painterModeAlpha:
+		im := dc.im.(*image.Alpha)
+		painter = newPatternPainterAlpha(im, dc.mask, dc.strokePattern)
 	}
 	dc.stroke(painter)
 }
@@ -460,17 +520,24 @@ func (dc *Context) Stroke() {
 // are implicity closed. The path is preserved after this operation.
 func (dc *Context) FillPreserve() {
 	var painter raster.Painter
-	if dc.mask == nil {
-		if pattern, ok := dc.fillPattern.(*solidPattern); ok {
-			// with a nil mask and a solid color pattern, we can be more efficient
-			// TODO: refactor so we don't have to do this type assertion stuff?
-			p := raster.NewRGBAPainter(dc.im)
-			p.SetColor(pattern.color)
-			painter = p
+	switch dc.pm {
+	case painterModeRGBA:
+		im := dc.im.(*image.RGBA)
+		if dc.mask == nil {
+			if pattern, ok := dc.fillPattern.(*solidPattern); ok {
+				// with a nil mask and a solid color pattern, we can be more efficient
+				// TODO: refactor so we don't have to do this type assertion stuff?
+				p := raster.NewRGBAPainter(im)
+				p.SetColor(pattern.color)
+				painter = p
+			}
 		}
-	}
-	if painter == nil {
-		painter = newPatternPainter(dc.im, dc.mask, dc.fillPattern)
+		if painter == nil {
+			painter = newPatternPainterRGBA(im, dc.mask, dc.fillPattern)
+		}
+	case painterModeAlpha:
+		im := dc.im.(*image.Alpha)
+		painter = newPatternPainterAlpha(im, dc.mask, dc.fillPattern)
 	}
 	dc.fill(painter)
 }
@@ -669,6 +736,18 @@ func (dc *Context) DrawImageAnchored(im image.Image, x, y int, ax, ay float64) {
 	fx, fy := float64(x), float64(y)
 	m := dc.matrix.Translate(fx, fy)
 	s2d := f64.Aff3{m.XX, m.XY, m.X0, m.YX, m.YY, m.Y0}
+	if dc.pm == painterModeAlpha && im.ColorModel() != color.AlphaModel {
+		// Convert source image to an 8bpp alpha image.
+		b := im.Bounds()
+		spim := image.NewAlpha(b)
+		for y := b.Min.Y; y < b.Max.Y; y++ {
+			for x := b.Min.X; x < b.Max.X; x++ {
+				sy, _, _, sa := Gray16AlphaModel.Convert(im.At(x, y)).RGBA()
+				spim.SetAlpha(x, y, color.Alpha{A: uint8(sy * sa >> 24)})
+			}
+		}
+		im = spim
+	}
 	if dc.mask == nil {
 		transformer.Transform(dc.im, s2d, im, im.Bounds(), draw.Over, nil)
 	} else {
@@ -699,7 +778,7 @@ func (dc *Context) FontHeight() float64 {
 	return dc.fontHeight
 }
 
-func (dc *Context) drawString(im *image.RGBA, s string, x, y float64) {
+func (dc *Context) drawString(im draw.Image, s string, x, y float64) {
 	d := &font.Drawer{
 		Dst:  im,
 		Src:  image.NewUniform(dc.color),

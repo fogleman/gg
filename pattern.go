@@ -7,6 +7,9 @@ import (
 	"github.com/golang/freetype/raster"
 )
 
+// m is the maximum color value returned by image.Color.RGBA.
+const m = 1<<16 - 1
+
 type RepeatOp int
 
 const (
@@ -64,14 +67,14 @@ func NewSurfacePattern(im image.Image, op RepeatOp) Pattern {
 	return &surfacePattern{im: im, op: op}
 }
 
-type patternPainter struct {
+type patternPainterRGBA struct {
 	im   *image.RGBA
 	mask *image.Alpha
 	p    Pattern
 }
 
-// Paint satisfies the Painter interface.
-func (r *patternPainter) Paint(ss []raster.Span, done bool) {
+// Paint srcatisfies the Painter interface.
+func (r *patternPainterRGBA) Paint(ss []raster.Span, done bool) {
 	b := r.im.Bounds()
 	for _, s := range ss {
 		if s.Y < b.Min.Y {
@@ -89,7 +92,6 @@ func (r *patternPainter) Paint(ss []raster.Span, done bool) {
 		if s.X0 >= s.X1 {
 			continue
 		}
-		const m = 1<<16 - 1
 		y := s.Y - r.im.Rect.Min.Y
 		x0 := s.X0 - r.im.Rect.Min.X
 		// RGBAPainter.Paint() in $GOPATH/src/github.com/golang/freetype/raster/paint.go
@@ -118,6 +120,61 @@ func (r *patternPainter) Paint(ss []raster.Span, done bool) {
 	}
 }
 
-func newPatternPainter(im *image.RGBA, mask *image.Alpha, p Pattern) *patternPainter {
-	return &patternPainter{im, mask, p}
+func newPatternPainterRGBA(im *image.RGBA, mask *image.Alpha, p Pattern) *patternPainterRGBA {
+	return &patternPainterRGBA{im, mask, p}
+}
+
+type patternPainterAlpha struct {
+	im   *image.Alpha
+	mask *image.Alpha
+	p    Pattern
+}
+
+// Paint srcatisfies the Painter interface.
+func (r *patternPainterAlpha) Paint(ss []raster.Span, done bool) {
+	b := r.im.Bounds()
+	for _, s := range ss {
+		if s.Y < b.Min.Y {
+			continue
+		}
+		if s.Y >= b.Max.Y {
+			return
+		}
+		if s.X0 < b.Min.X {
+			s.X0 = b.Min.X
+		}
+		if s.X1 > b.Max.X {
+			s.X1 = b.Max.X
+		}
+		if s.X0 >= s.X1 {
+			continue
+		}
+		y := s.Y - r.im.Rect.Min.Y
+		x0 := s.X0 - r.im.Rect.Min.X
+		// AlphaOverPainter.Paint() in $GOPATH/src/github.com/golang/freetype/raster/paint.go
+		i0 := (s.Y-r.im.Rect.Min.Y)*r.im.Stride + (s.X0 - r.im.Rect.Min.X)
+		i1 := i0 + (s.X1 - s.X0)
+
+		for i, x := i0, x0; i < i1; i, x = i+1, x+1 {
+			ma := s.Alpha
+			if r.mask != nil {
+				ma = ma * uint32(r.mask.AlphaAt(x, y).A) / 255
+				if ma == 0 {
+					continue
+				}
+			}
+
+			srcy, _, _, srca := r.p.ColorAt(x, y).RGBA()
+			dst := uint32(r.im.Pix[i])
+			dst |= dst << 8
+
+			srca = srca * ma >> 16              // combine source alpha with mask
+			v := (srcy*srca + dst*(m-srca)) / m // blend source over destination
+			r.im.Pix[i] = uint8(v >> 8)
+		}
+	}
+}
+
+func newPatternPainterAlpha(im *image.Alpha, mask *image.Alpha, p Pattern) *patternPainterAlpha {
+	return &patternPainterAlpha{im, mask, p}
 }

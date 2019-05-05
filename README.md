@@ -42,12 +42,19 @@ There are [lots of examples](https://github.com/fogleman/gg/tree/master/examples
 
 ## Creating Contexts
 
-There are a few ways of creating a context.
+There are a few ways of creating a context that draws into a 32bit/pixel image.
 
 ```go
 NewContext(width, height int) *Context
 NewContextForImage(im image.Image) *Context
 NewContextForRGBA(im *image.RGBA) *Context
+```
+
+You can also create a context that draws into an 8bit/pixel image, for creating 8bit alpha masks.
+
+```go
+NewAlphaContext(width, height int) *Context
+NewContextForAlpha(im *image.Alpha) *Context
 ```
 
 ## Drawing Functions

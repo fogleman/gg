@@ -83,6 +83,13 @@ func imageToRGBA(src image.Image) *image.RGBA {
 	return dst
 }
 
+func imageToAlpha(src image.Image) *image.Alpha {
+	bounds := src.Bounds()
+	dst := image.NewAlpha(bounds)
+	draw.Draw(dst, bounds, src, bounds.Min, draw.Src)
+	return dst
+}
+
 func parseHexColor(x string) (r, g, b, a int) {
 	x = strings.TrimPrefix(x, "#")
 	a = 255
