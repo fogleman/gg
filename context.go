@@ -849,13 +849,13 @@ func (dc *Context) ScaleAbout(sx, sy, x, y float64) {
 	dc.Translate(-x, -y)
 }
 
-// Rotate updates the current matrix with a clockwise rotation.
+// Rotate updates the current matrix with a anticlockwise rotation.
 // Rotation occurs about the origin. Angle is specified in radians.
 func (dc *Context) Rotate(angle float64) {
 	dc.matrix = dc.matrix.Rotate(angle)
 }
 
-// RotateAbout updates the current matrix with a clockwise rotation.
+// RotateAbout updates the current matrix with a anticlockwise rotation.
 // Rotation occurs about the specified point. Angle is specified in radians.
 func (dc *Context) RotateAbout(angle, x, y float64) {
 	dc.Translate(x, y)
