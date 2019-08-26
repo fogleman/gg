@@ -5,6 +5,7 @@ import (
 	"errors"
 	"image"
 	"image/color"
+	"image/jpeg"
 	"image/png"
 	"io"
 	"math"
@@ -148,6 +149,13 @@ func (dc *Context) SaveJPG(path string, quality int) error {
 // EncodePNG encodes the image as a PNG and writes it to the provided io.Writer.
 func (dc *Context) EncodePNG(w io.Writer) error {
 	return png.Encode(w, dc.im)
+}
+
+// EncodeJPG encodes the image as a JPG and writes it to the provided io.Writer
+// in JPEG 4:2:0 baseline format with the given options.
+// Default parameters are used if a nil *jpeg.Options is passed.
+func (dc *Context) EncodeJPG(w io.Writer, o *jpeg.Options) error {
+	return jpeg.Encode(w, dc.im, o)
 }
 
 // SetDash sets the current dash pattern to use. Call with zero arguments to
