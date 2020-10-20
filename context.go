@@ -319,13 +319,22 @@ func (dc *Context) QuadraticTo(x1, y1, x2, y2 float64) {
 	if !dc.hasCurrent {
 		dc.MoveTo(x1, y1)
 	}
+	x0, y0 := dc.current.X, dc.current.Y
 	x1, y1 = dc.TransformPoint(x1, y1)
 	x2, y2 = dc.TransformPoint(x2, y2)
-	p1 := Point{x1, y1}
-	p2 := Point{x2, y2}
-	dc.strokePath.Add2(p1.Fixed(), p2.Fixed())
-	dc.fillPath.Add2(p1.Fixed(), p2.Fixed())
-	dc.current = p2
+	points := QuadraticBezier(x0, y0, x1, y1, x2, y2)
+	previous := dc.current.Fixed()
+	for _, p := range points[1:] {
+		f := p.Fixed()
+		if f == previous {
+			// TODO: this fixes some rendering issues but not all
+			continue
+		}
+		previous = f
+		dc.strokePath.Add1(f)
+		dc.fillPath.Add1(f)
+		dc.current = p
+	}
 }
 
 // CubicTo adds a cubic bezier curve to the current path starting at the
