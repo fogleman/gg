@@ -164,6 +164,52 @@ func NewRadialGradient(x0, y0, r0, x1, y1, r1 float64) Gradient {
 	return g
 }
 
+// Conic Gradient
+type conicGradient struct {
+	cx, cy   float64
+	rotation float64
+	stops    stops
+}
+
+func (g *conicGradient) ColorAt(x, y int) color.Color {
+	if len(g.stops) == 0 {
+		return color.Transparent
+	}
+	a := math.Atan2(float64(y)-g.cy, float64(x)-g.cx)
+	t := norm(a, -math.Pi, math.Pi) - g.rotation
+	if t < 0 {
+		t += 1
+	}
+	return getColor(t, g.stops)
+}
+
+func (g *conicGradient) AddColorStop(offset float64, color color.Color) {
+	g.stops = append(g.stops, stop{pos: offset, color: color})
+	sort.Sort(g.stops)
+}
+
+func NewConicGradient(cx, cy, deg float64) Gradient {
+	g := &conicGradient{
+		cx:       cx,
+		cy:       cy,
+		rotation: normalizeAngle(deg) / 360,
+	}
+	return g
+}
+
+func normalizeAngle(t float64) float64 {
+	t = math.Mod(t, 360)
+	if t < 0 {
+		t += 360
+	}
+	return t
+}
+
+// Map value which is in range [a..b] to range [0..1]
+func norm(value, a, b float64) float64 {
+	return (value - a) * (1.0 / (b - a))
+}
+
 func getColor(pos float64, stops stops) color.Color {
 	if pos <= 0.0 || len(stops) == 1 {
 		return stops[0].color
