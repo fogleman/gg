@@ -128,7 +128,7 @@ SetFillRule(fillRule FillRule)
 
 ## Gradients & Patterns
 
-`gg` supports linear and radial gradients and surface patterns. You can also implement your own patterns.
+`gg` supports linear, radial and conic gradients and surface patterns. You can also implement your own patterns.
 
 ```go
 SetFillStyle(pattern Pattern)
@@ -136,6 +136,7 @@ SetStrokeStyle(pattern Pattern)
 NewSolidPattern(color color.Color)
 NewLinearGradient(x0, y0, x1, y1 float64)
 NewRadialGradient(x0, y0, r0, x1, y1, r1 float64)
+NewConicGradient(cx, cy, deg float64)
 NewSurfacePattern(im image.Image, op RepeatOp)
 ```
 
