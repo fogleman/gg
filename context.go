@@ -77,6 +77,7 @@ type Context struct {
 	fontHeight    float64
 	matrix        Matrix
 	stack         []*Context
+	interpolator  draw.Interpolator
 }
 
 // NewContext creates a new image.RGBA with the specified width and height
@@ -109,7 +110,12 @@ func NewContextForRGBA(im *image.RGBA) *Context {
 		fontFace:      basicfont.Face7x13,
 		fontHeight:    13,
 		matrix:        Identity(),
+		interpolator:  draw.BiLinear,
 	}
+}
+
+func (dc *Context) SetInterpolator(interpolator draw.Interpolator) {
+	dc.interpolator = interpolator
 }
 
 // GetCurrentPoint will return the current point and if there is a current point.
@@ -673,7 +679,7 @@ func (dc *Context) DrawImageAnchored(im image.Image, x, y int, ax, ay float64) {
 	s := im.Bounds().Size()
 	x -= int(ax * float64(s.X))
 	y -= int(ay * float64(s.Y))
-	transformer := draw.BiLinear
+	transformer := dc.interpolator
 	fx, fy := float64(x), float64(y)
 	m := dc.matrix.Translate(fx, fy)
 	s2d := f64.Aff3{m.XX, m.XY, m.X0, m.YX, m.YY, m.Y0}
@@ -728,7 +734,7 @@ func (dc *Context) drawString(im *image.RGBA, s string, x, y float64) {
 			continue
 		}
 		sr := dr.Sub(dr.Min)
-		transformer := draw.BiLinear
+		transformer := dc.interpolator
 		fx, fy := float64(dr.Min.X), float64(dr.Min.Y)
 		m := dc.matrix.Translate(fx, fy)
 		s2d := f64.Aff3{m.XX, m.XY, m.X0, m.YX, m.YY, m.Y0}
