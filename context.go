@@ -670,10 +670,13 @@ func (dc *Context) DrawImage(im image.Image, x, y int) {
 // The anchor point is x - w * ax, y - h * ay, where w, h is the size of the
 // image. Use ax=0.5, ay=0.5 to center the image at the specified point.
 func (dc *Context) DrawImageAnchored(im image.Image, x, y int, ax, ay float64) {
+	dc.DrawImageAnchoredWithTransformer(im, x, y, 0, 0, draw.BiLinear)
+}
+
+func (dc *Context) DrawImageAnchoredWithTransformer(im image.Image, x, y int, ax, ay float64, transformer *draw.Kernel) {
 	s := im.Bounds().Size()
 	x -= int(ax * float64(s.X))
 	y -= int(ay * float64(s.Y))
-	transformer := draw.BiLinear
 	fx, fy := float64(x), float64(y)
 	m := dc.matrix.Translate(fx, fy)
 	s2d := f64.Aff3{m.XX, m.XY, m.X0, m.YX, m.YY, m.Y0}
