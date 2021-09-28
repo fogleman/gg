@@ -765,7 +765,7 @@ func (dc *Context) DrawStringAnchored(s string, x, y, ax, ay float64) {
 // DrawStringWrapped word-wraps the specified string to the given max width
 // and then draws it at the specified anchor point using the given line
 // spacing and text alignment.
-func (dc *Context) DrawStringWrapped(s string, x, y, ax, ay, width, lineSpacing float64, align Align) {
+func (dc *Context) DrawStringWrapped(s string, x, y, ax, ay, width, lineSpacing float64, align Align) float64 {
 	lines := dc.WordWrap(s, width)
 
 	// sync h formula with MeasureMultilineString
@@ -789,6 +789,8 @@ func (dc *Context) DrawStringWrapped(s string, x, y, ax, ay, width, lineSpacing 
 		dc.DrawStringAnchored(line, x, y, ax, ay)
 		y += dc.fontHeight * lineSpacing
 	}
+
+	return h
 }
 
 func (dc *Context) MeasureMultilineString(s string, lineSpacing float64) (width, height float64) {

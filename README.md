@@ -94,7 +94,7 @@ It will even do word wrap for you!
 ```go
 DrawString(s string, x, y float64)
 DrawStringAnchored(s string, x, y, ax, ay float64)
-DrawStringWrapped(s string, x, y, ax, ay, width, lineSpacing float64, align Align)
+DrawStringWrapped(s string, x, y, ax, ay, width, lineSpacing float64, align Align) float64
 MeasureString(s string) (w, h float64)
 MeasureMultilineString(s string, lineSpacing float64) (w, h float64)
 WordWrap(s string, w float64) []string
