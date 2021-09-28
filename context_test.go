@@ -91,7 +91,7 @@ func TestCircles(t *testing.T) {
 		dc.Stroke()
 	}
 	saveImage(dc, "TestCircles")
-	checkHash(t, dc, "c52698000df96fabafe7863701afe922")
+	checkHash(t, dc, "7a99b51d2442662c611420751b393d28")
 }
 
 func TestQuadratic(t *testing.T) {
@@ -113,7 +113,7 @@ func TestQuadratic(t *testing.T) {
 		dc.Stroke()
 	}
 	saveImage(dc, "TestQuadratic")
-	checkHash(t, dc, "56b842d814aee94b52495addae764a77")
+	checkHash(t, dc, "6d13f76e5fca2c4297aa44c3fbf0f876")
 }
 
 func TestCubic(t *testing.T) {
@@ -176,7 +176,7 @@ func TestClip(t *testing.T) {
 		dc.Fill()
 	}
 	saveImage(dc, "TestClip")
-	checkHash(t, dc, "762c32374d529fd45ffa038b05be7865")
+	checkHash(t, dc, "a3793e533d9334b697ec73ce8b6633bb")
 }
 
 func TestPushPop(t *testing.T) {
@@ -191,7 +191,7 @@ func TestPushPop(t *testing.T) {
 		dc.Pop()
 	}
 	saveImage(dc, "TestPushPop")
-	checkHash(t, dc, "31e908ee1c2ea180da98fd5681a89d05")
+	checkHash(t, dc, "3e05bd5e9c7e8b65c6b6a82181ce4e42")
 }
 
 func TestDrawStringWrapped(t *testing.T) {
@@ -255,7 +255,7 @@ func TestDrawPoint(t *testing.T) {
 		}
 	}
 	saveImage(dc, "TestDrawPoint")
-	checkHash(t, dc, "55af8874531947ea6eeb62222fb33e0e")
+	checkHash(t, dc, "6f56cf1206fd2d730e57d8a579354cfc")
 }
 
 func TestLinearGradient(t *testing.T) {
