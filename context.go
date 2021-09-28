@@ -909,10 +909,9 @@ func (dc *Context) Push() {
 
 // Pop restores the last saved context state from the stack.
 func (dc *Context) Pop() {
-	before := *dc
 	s := dc.stack
-	x, s := s[len(s)-1], s[:len(s)-1]
-	*dc = *x
+	before, s := s[len(s)-1], s[:len(s)-1]
+	*dc = *before
 	dc.mask = before.mask
 	dc.strokePath = before.strokePath
 	dc.fillPath = before.fillPath
