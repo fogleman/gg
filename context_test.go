@@ -308,6 +308,56 @@ func TestDashes(t *testing.T) {
 	checkHash(t, dc, "2c4c6e23ae4219f1dbfd8c3ea5a8be68")
 }
 
+func TestIssue85(t *testing.T) {
+	// https://github.com/fogleman/gg/issues/85
+	const (
+		W  = 1024.0
+		H  = 1024.0
+		nn = 10000
+	)
+
+	var (
+		N  = float64(nn)
+		dx = float64(W) / float64(nn)
+
+		ylow = H / 3.0
+		yhi  = 2.0 * H / 3.0
+	)
+
+	dc := NewContext(W, H)
+	dc.SetRGB(1, 1, 1)
+	dc.Clear()
+	dc.SetRGB(0, 0, 0)
+	dc.SetLineWidth(1)
+	var (
+		x = 0.0
+		y = ylow
+	)
+	dc.MoveTo(x, y)
+	for i := 1; i < nn; i++ {
+		j := float64(i)
+		x += dx
+		switch {
+		case j < 0.1*N:
+			y = ylow
+		case 0.1*N <= j && j < 0.5*N:
+			y = yhi
+		case 0.5*N <= j && j < 0.55*N:
+			y = ylow
+		case 0.55*N <= j && j < 0.9*N:
+			y = yhi
+		default:
+			y = ylow
+		}
+
+		dc.LineTo(x, y)
+	}
+	dc.Stroke()
+
+	saveImage(dc, "TestIssue85")
+	checkHash(t, dc, "865a6575a2f1312ed5728e192161721e")
+}
+
 func BenchmarkCircles(b *testing.B) {
 	dc := NewContext(1000, 1000)
 	dc.SetRGB(1, 1, 1)

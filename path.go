@@ -146,7 +146,7 @@ func rasterPath(paths [][]Point) raster.Path {
 				if dy < 0 {
 					dy = -dy
 				}
-				if dx+dy > 8 {
+				if dx+dy > 4 {
 					// TODO: this is a hack for cases where two points are
 					// too close - causes rendering issues with joins / caps
 					result.Add1(f)
