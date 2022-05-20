@@ -3,7 +3,7 @@ package main
 import (
 	"image/color"
 
-	"gg"
+	"github.com/fogleman/gg"
 )
 
 func main() {

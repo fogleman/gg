@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"gg"
+	"github.com/fogleman/gg"
 	"github.com/golang/freetype/truetype"
 	"golang.org/x/image/font/gofont/goregular"
 )

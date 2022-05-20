@@ -3,7 +3,7 @@ package main
 import (
 	"math"
 
-	"gg"
+	"github.com/fogleman/gg"
 )
 
 type Point struct {

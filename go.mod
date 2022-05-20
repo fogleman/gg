@@ -1,4 +1,4 @@
-module gg
+module github/fogleman/gg
 
 go 1.16
 

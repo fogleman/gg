@@ -1,6 +1,6 @@
 package main
 
-import "gg"
+import "github.com/fogleman/gg"
 
 func main() {
 	im, err := gg.LoadPNG("examples/baboon.png")
