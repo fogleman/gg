@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/fogleman/gg"
+	"gg"
 )
 
 func main() {

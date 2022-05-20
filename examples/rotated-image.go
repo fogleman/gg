@@ -1,6 +1,6 @@
 package main
 
-import "github.com/fogleman/gg"
+import "gg"
 
 func main() {
 	const W = 400

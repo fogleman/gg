@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/fogleman/gg"
+	"gg"
 	"github.com/golang/freetype/truetype"
 	"golang.org/x/image/font/gofont/goregular"
 )
