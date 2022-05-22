@@ -164,7 +164,7 @@ func unfix(x fixed.Int26_6) float64 {
 func LoadFontFace(fS fs.FS, path string, points float64) (font.Face, error) {
 	var fontBytes []byte
 	var err error
-	if fS != nil {
+	if fS == nil {
 		fontBytes, err = ioutil.ReadFile(path)
 	} else {
 		fp, err := fS.Open(path)
