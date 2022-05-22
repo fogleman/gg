@@ -7,6 +7,7 @@ import (
 	"image/jpeg"
 	_ "image/jpeg"
 	"image/png"
+	"io/fs"
 	"io/ioutil"
 	"math"
 	"os"
@@ -26,17 +27,39 @@ func Degrees(radians float64) float64 {
 	return radians * 180 / math.Pi
 }
 
-func LoadImage(path string) (image.Image, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
+func LoadImage(path string) (image.Image, error) { return LoadImageFS(nil, path) }
+func LoadImageFS(fS fs.FS, path string) (image.Image, error) {
+	var err error
+	var im image.Image
+	if fS != nil {
+		var file fs.File
+		file, err = fS.Open(path)
+		if err != nil {
+			return nil, err
+		}
+		im, _, err = image.Decode(file)
+	} else {
+		var file *os.File
+		file, err = os.Open(path)
+		if err != nil {
+			return nil, err
+		}
+		defer file.Close()
+		im, _, err = image.Decode(file)
 	}
-	defer file.Close()
-	im, _, err := image.Decode(file)
 	return im, err
 }
 
-func LoadPNG(path string) (image.Image, error) {
+func LoadPNG(path string) (image.Image, error) { return LoadPNGFS(nil, path) }
+func LoadPNGFS(fS fs.FS, path string) (image.Image, error) {
+	if fS != nil {
+		file, err := fS.Open(path)
+		if err != nil {
+			return nil, err
+		}
+		defer file.Close()
+		return png.Decode(file)
+	}
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -54,7 +77,16 @@ func SavePNG(path string, im image.Image) error {
 	return png.Encode(file, im)
 }
 
-func LoadJPG(path string) (image.Image, error) {
+func LoadJPG(path string) (image.Image, error) { return LoadJPGFS(nil, path) }
+func LoadJPGFS(fS fs.FS, path string) (image.Image, error) {
+	if fS != nil {
+		file, err := fS.Open(path)
+		if err != nil {
+			return nil, err
+		}
+		defer file.Close()
+		return jpeg.Decode(file)
+	}
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -129,8 +161,19 @@ func unfix(x fixed.Int26_6) float64 {
 // are not thread safe and cannot be used in parallel across goroutines.
 // You can usually just use the Context.LoadFontFace function instead of
 // this package-level function.
-func LoadFontFace(path string, points float64) (font.Face, error) {
-	fontBytes, err := ioutil.ReadFile(path)
+func LoadFontFace(fS fs.FS, path string, points float64) (font.Face, error) {
+	var fontBytes []byte
+	var err error
+	if fS != nil {
+		fontBytes, err = ioutil.ReadFile(path)
+	} else {
+		fp, err := fS.Open(path)
+		if err != nil {
+			return nil, err
+		}
+		defer fp.Close()
+		fontBytes, err = ioutil.ReadAll(fp)
+	}
 	if err != nil {
 		return nil, err
 	}
