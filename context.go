@@ -743,51 +743,151 @@ func (dc *Context) drawString(im *image.RGBA, s string, x, y float64) {
 
 // DrawString draws the specified text at the specified point.
 func (dc *Context) DrawString(s string, x, y float64) {
-	dc.DrawStringAnchored(s, x, y, 0, 0)
+	dc.DrawStringWithOptions(s, x, y, DrawStringOptions{})
 }
 
 // DrawStringAnchored draws the specified text at the specified anchor point.
 // The anchor point is x - w * ax, y - h * ay, where w, h is the size of the
 // text. Use ax=0.5, ay=0.5 to center the text at the specified point.
 func (dc *Context) DrawStringAnchored(s string, x, y, ax, ay float64) {
-	w, h := dc.MeasureString(s)
-	x -= ax * w
-	y += ay * h
-	if dc.mask == nil {
-		dc.drawString(dc.im, s, x, y)
-	} else {
-		im := image.NewRGBA(image.Rect(0, 0, dc.width, dc.height))
-		dc.drawString(im, s, x, y)
-		draw.DrawMask(dc.im, dc.im.Bounds(), im, image.ZP, dc.mask, image.ZP, draw.Over)
-	}
+	dc.DrawStringWithOptions(s, x, y, DrawStringOptions{
+		Anchored: &DrawStringAnchoredOptions{
+			X: ax,
+			Y: ay,
+		},
+	})
 }
 
 // DrawStringWrapped word-wraps the specified string to the given max width
 // and then draws it at the specified anchor point using the given line
 // spacing and text alignment.
 func (dc *Context) DrawStringWrapped(s string, x, y, ax, ay, width, lineSpacing float64, align Align) {
-	lines := dc.WordWrap(s, width)
+	dc.DrawStringWithOptions(s, x, y, DrawStringOptions{
+		Anchored: &DrawStringAnchoredOptions{
+			X: ax,
+			Y: ay,
+		},
+		Wrapped: &DrawStringWrappedOptions{
+			Align:       align,
+			LineSpacing: lineSpacing,
+			Width:       width,
+		},
+	})
+}
 
-	// sync h formula with MeasureMultilineString
-	h := float64(len(lines)) * dc.fontHeight * lineSpacing
-	h -= (lineSpacing - 1) * dc.fontHeight
+type DrawStringOptions struct {
+	Anchored   *DrawStringAnchoredOptions
+	Underlined *DrawStringUnderlinedOptions
+	Wrapped    *DrawStringWrappedOptions
+}
 
-	x -= ax * width
-	y -= ay * h
-	switch align {
-	case AlignLeft:
-		ax = 0
-	case AlignCenter:
-		ax = 0.5
-		x += width / 2
-	case AlignRight:
-		ax = 1
-		x += width
+type DrawStringAnchoredOptions struct {
+	X float64
+	Y float64
+}
+
+type DrawStringUnderlinedOptions struct {
+	LineSpacing float64
+	LineWidth   float64
+}
+
+type DrawStringWrappedOptions struct {
+	Align       Align
+	LineSpacing float64
+	Width       float64
+}
+
+type drawStringWithOptionsLine struct {
+	line string
+	x    float64
+	y    float64
+}
+
+func (dc *Context) DrawStringWithOptions(s string, x, y float64, o DrawStringOptions) {
+	var ls []drawStringWithOptionsLine
+	if o.Wrapped != nil {
+		lines := dc.WordWrap(s, o.Wrapped.Width)
+
+		// sync h formula with MeasureMultilineString
+		h := float64(len(lines)) * dc.fontHeight * o.Wrapped.LineSpacing
+		h -= (o.Wrapped.LineSpacing - 1) * dc.fontHeight
+
+		var ax, ay float64
+		if o.Anchored != nil {
+			ax = o.Anchored.X
+			ay = o.Anchored.Y
+		}
+
+		x -= ax * o.Wrapped.Width
+		y -= ay * h
+		switch o.Wrapped.Align {
+		case AlignCenter:
+			x += o.Wrapped.Width / 2
+		case AlignRight:
+			x += o.Wrapped.Width
+		}
+		for _, line := range lines {
+			ls = append(ls, drawStringWithOptionsLine{
+				line: line,
+				x:    x,
+				y:    y,
+			})
+			y += dc.fontHeight * o.Wrapped.LineSpacing
+		}
+	} else {
+		ls = []drawStringWithOptionsLine{{
+			line: s,
+			x:    x,
+			y:    y,
+		}}
 	}
-	ay = 1
-	for _, line := range lines {
-		dc.DrawStringAnchored(line, x, y, ax, ay)
-		y += dc.fontHeight * lineSpacing
+
+	im := dc.im
+	if dc.mask != nil {
+		im = image.NewRGBA(image.Rect(0, 0, dc.width, dc.height))
+	}
+
+	var udc *Context
+	if o.Underlined != nil {
+		udc = NewContextForRGBA(im)
+		udc.SetColor(dc.color)
+		udc.SetLineWidth(o.Underlined.LineWidth)
+	}
+
+	for _, l := range ls {
+		var ax, ay float64
+		if o.Wrapped != nil {
+			switch o.Wrapped.Align {
+			case AlignLeft:
+				ax = 0
+			case AlignCenter:
+				ax = 0.5
+			case AlignRight:
+				ax = 1
+			}
+			ay = 1
+		} else if o.Anchored != nil {
+			ax = o.Anchored.X
+			ay = o.Anchored.Y
+		}
+
+		w, h := dc.MeasureString(l.line)
+		l.x -= ax * w
+		l.y += ay * h
+
+		dc.drawString(im, l.line, l.x, l.y)
+
+		if o.Underlined != nil {
+			udc.DrawLine(l.x, l.y+o.Underlined.LineSpacing, l.x+w, l.y+o.Underlined.LineSpacing)
+		}
+	}
+
+	if o.Underlined != nil {
+		udc.Stroke()
+	}
+
+	if dc.mask != nil {
+		draw.DrawMask(dc.im, dc.im.Bounds(), im, image.ZP, dc.mask, image.ZP, draw.Over)
 	}
 }
 
