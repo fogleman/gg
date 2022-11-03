@@ -465,7 +465,7 @@ func (dc *Context) Stroke() {
 }
 
 // FillPreserve fills the current path with the current color. Open subpaths
-// are implicity closed. The path is preserved after this operation.
+// are implicitly closed. The path is preserved after this operation.
 func (dc *Context) FillPreserve() {
 	var painter raster.Painter
 	if dc.mask == nil {
@@ -484,7 +484,7 @@ func (dc *Context) FillPreserve() {
 }
 
 // Fill fills the current path with the current color. Open subpaths
-// are implicity closed. The path is cleared after this operation.
+// are implicitly closed. The path is cleared after this operation.
 func (dc *Context) Fill() {
 	dc.FillPreserve()
 	dc.ClearPath()
