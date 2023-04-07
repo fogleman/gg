@@ -37,18 +37,18 @@ func wordWrap(m measureStringer, s string, width float64) []string {
 			w, _ := m.MeasureString(x + fields[i])
 			if w > width {
 				if x == "" {
-					result = append(result, fields[i])
+					result = append(result, strings.ReplaceAll(fields[i], " ", ""))
 					x = ""
 					continue
 				} else {
-					result = append(result, x)
+					result = append(result, strings.ReplaceAll(x, " ", ""))
 					x = ""
 				}
 			}
 			x += fields[i] + fields[i+1]
 		}
 		if x != "" {
-			result = append(result, x)
+			result = append(result, strings.ReplaceAll(x, " ", ""))
 		}
 	}
 	for i, line := range result {
