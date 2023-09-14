@@ -5,7 +5,6 @@ import (
 	"errors"
 	"image"
 	"image/color"
-	"image/jpeg"
 	"image/png"
 	"io"
 	"math"
@@ -141,21 +140,9 @@ func (dc *Context) SavePNG(path string) error {
 	return SavePNG(path, dc.im)
 }
 
-// SaveJPG encodes the image as a JPG and writes it to disk.
-func (dc *Context) SaveJPG(path string, quality int) error {
-	return SaveJPG(path, dc.im, quality)
-}
-
 // EncodePNG encodes the image as a PNG and writes it to the provided io.Writer.
 func (dc *Context) EncodePNG(w io.Writer) error {
 	return png.Encode(w, dc.im)
-}
-
-// EncodeJPG encodes the image as a JPG and writes it to the provided io.Writer
-// in JPEG 4:2:0 baseline format with the given options.
-// Default parameters are used if a nil *jpeg.Options is passed.
-func (dc *Context) EncodeJPG(w io.Writer, o *jpeg.Options) error {
-	return jpeg.Encode(w, dc.im, o)
 }
 
 // SetDash sets the current dash pattern to use. Call with zero arguments to
@@ -707,7 +694,7 @@ func (dc *Context) FontHeight() float64 {
 	return dc.fontHeight
 }
 
-func (dc *Context) drawString(im *image.RGBA, s string, x, y float64, transformer *draw.Kernel) {
+func (dc *Context) drawString(im *image.RGBA, s string, x, y float64) {
 	d := &font.Drawer{
 		Dst:  im,
 		Src:  image.NewUniform(dc.color),
@@ -728,6 +715,7 @@ func (dc *Context) drawString(im *image.RGBA, s string, x, y float64, transforme
 			continue
 		}
 		sr := dr.Sub(dr.Min)
+		transformer := draw.BiLinear
 		fx, fy := float64(dr.Min.X), float64(dr.Min.Y)
 		m := dc.matrix.Translate(fx, fy)
 		s2d := f64.Aff3{m.XX, m.XY, m.X0, m.YX, m.YY, m.Y0}
@@ -741,22 +729,22 @@ func (dc *Context) drawString(im *image.RGBA, s string, x, y float64, transforme
 }
 
 // DrawString draws the specified text at the specified point.
-func (dc *Context) DrawString(s string, x, y float64, transformer *draw.Kernel) {
-	dc.DrawStringAnchored(s, x, y, 0, 0, transformer)
+func (dc *Context) DrawString(s string, x, y float64) {
+	dc.DrawStringAnchored(s, x, y, 0, 0)
 }
 
 // DrawStringAnchored draws the specified text at the specified anchor point.
 // The anchor point is x - w * ax, y - h * ay, where w, h is the size of the
 // text. Use ax=0.5, ay=0.5 to center the text at the specified point.
-func (dc *Context) DrawStringAnchored(s string, x, y, ax, ay float64, transformer *draw.Kernel) {
+func (dc *Context) DrawStringAnchored(s string, x, y, ax, ay float64) {
 	w, h := dc.MeasureString(s)
 	x -= ax * w
 	y += ay * h
 	if dc.mask == nil {
-		dc.drawString(dc.im, s, x, y, transformer)
+		dc.drawString(dc.im, s, x, y)
 	} else {
 		im := image.NewRGBA(image.Rect(0, 0, dc.width, dc.height))
-		dc.drawString(im, s, x, y, transformer)
+		dc.drawString(im, s, x, y)
 		draw.DrawMask(dc.im, dc.im.Bounds(), im, image.ZP, dc.mask, image.ZP, draw.Over)
 	}
 }
@@ -764,7 +752,7 @@ func (dc *Context) DrawStringAnchored(s string, x, y, ax, ay float64, transforme
 // DrawStringWrapped word-wraps the specified string to the given max width
 // and then draws it at the specified anchor point using the given line
 // spacing and text alignment.
-func (dc *Context) DrawStringWrapped(s string, x, y, ax, ay, width, lineSpacing float64, align Align, transformer *draw.Kernel) {
+func (dc *Context) DrawStringWrapped(s string, x, y, ax, ay, width, lineSpacing float64, align Align) {
 	lines := dc.WordWrap(s, width)
 
 	// sync h formula with MeasureMultilineString
@@ -785,7 +773,7 @@ func (dc *Context) DrawStringWrapped(s string, x, y, ax, ay, width, lineSpacing 
 	}
 	ay = 1
 	for _, line := range lines {
-		dc.DrawStringAnchored(line, x, y, ax, ay, transformer)
+		dc.DrawStringAnchored(line, x, y, ax, ay)
 		y += dc.fontHeight * lineSpacing
 	}
 }
@@ -856,13 +844,13 @@ func (dc *Context) ScaleAbout(sx, sy, x, y float64) {
 	dc.Translate(-x, -y)
 }
 
-// Rotate updates the current matrix with a anticlockwise rotation.
+// Rotate updates the current matrix with a clockwise rotation.
 // Rotation occurs about the origin. Angle is specified in radians.
 func (dc *Context) Rotate(angle float64) {
 	dc.matrix = dc.matrix.Rotate(angle)
 }
 
-// RotateAbout updates the current matrix with a anticlockwise rotation.
+// RotateAbout updates the current matrix with a clockwise rotation.
 // Rotation occurs about the specified point. Angle is specified in radians.
 func (dc *Context) RotateAbout(angle, x, y float64) {
 	dc.Translate(x, y)
@@ -910,7 +898,7 @@ func (dc *Context) Push() {
 func (dc *Context) Pop() {
 	before := *dc
 	s := dc.stack
-	x, _ := s[len(s)-1], s[:len(s)-1]
+	x, s := s[len(s)-1], s[:len(s)-1]
 	*dc = *x
 	dc.mask = before.mask
 	dc.strokePath = before.strokePath

@@ -105,11 +105,11 @@ func parseHexColor(x string) (r, g, b, a int) {
 }
 
 func fixp(x, y float64) fixed.Point26_6 {
-	return fixed.Point26_6{X: fix(x), Y: fix(y)}
+	return fixed.Point26_6{fix(x), fix(y)}
 }
 
 func fix(x float64) fixed.Int26_6 {
-	return fixed.Int26_6(math.Round(x * 64))
+	return fixed.Int26_6(x * 64)
 }
 
 func unfix(x fixed.Int26_6) float64 {
