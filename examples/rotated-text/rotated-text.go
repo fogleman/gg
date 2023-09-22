@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/fogleman/gg"
 	"github.com/golang/freetype/truetype"
+	"github.com/wildberries-ru/gg"
+	"golang.org/x/image/draw"
 	"golang.org/x/image/font/gofont/goregular"
 )
 
@@ -25,6 +26,6 @@ func main() {
 	dc.Rotate(gg.Radians(10))
 	dc.DrawRectangle(100, 180, w, h)
 	dc.Stroke()
-	dc.DrawStringAnchored(text, 100, 180, 0.0, 0.0)
+	dc.DrawStringAnchored(text, 100, 180, 0.0, 0.0, draw.BiLinear)
 	dc.SavePNG("out.png")
 }

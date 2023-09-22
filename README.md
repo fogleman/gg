@@ -6,7 +6,7 @@
 
 ## Installation
 
-    go get -u github.com/fogleman/gg
+    go get -u github.com/wildberries-ru/gg
 
 Alternatively, you may use gopkg.in to grab a specific major-version:
 
@@ -14,8 +14,8 @@ Alternatively, you may use gopkg.in to grab a specific major-version:
 
 ## Documentation
 
-- godoc: https://godoc.org/github.com/fogleman/gg
-- pkg.go.dev: https://pkg.go.dev/github.com/fogleman/gg?tab=doc
+- godoc: https://godoc.org/github.com/wildberries-ru/gg
+- pkg.go.dev: https://pkg.go.dev/github.com/wildberries-ru/gg?tab=doc
 
 ## Hello, Circle!
 
@@ -24,7 +24,7 @@ Look how easy!
 ```go
 package main
 
-import "github.com/fogleman/gg"
+import "github.com/wildberries-ru/gg"
 
 func main() {
     dc := gg.NewContext(1000, 1000)
@@ -37,7 +37,7 @@ func main() {
 
 ## Examples
 
-There are [lots of examples](https://github.com/fogleman/gg/tree/master/examples) included. They're mostly for testing the code, but they're good for learning, too.
+There are [lots of examples](https://github.com/wildberries-ru/gg/tree/master/examples) included. They're mostly for testing the code, but they're good for learning, too.
 
 ![Examples](http://i.imgur.com/tMFoyzu.png)
 
@@ -203,7 +203,7 @@ See the output of this example below.
 ```go
 package main
 
-import "github.com/fogleman/gg"
+import "github.com/wildberries-ru/gg"
 
 func main() {
 	const S = 1024

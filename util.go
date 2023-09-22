@@ -7,7 +7,6 @@ import (
 	"image/jpeg"
 	_ "image/jpeg"
 	"image/png"
-	"io/ioutil"
 	"math"
 	"os"
 	"strings"
@@ -130,7 +129,7 @@ func unfix(x fixed.Int26_6) float64 {
 // You can usually just use the Context.LoadFontFace function instead of
 // this package-level function.
 func LoadFontFace(path string, points float64) (font.Face, error) {
-	fontBytes, err := ioutil.ReadFile(path)
+	fontBytes, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}

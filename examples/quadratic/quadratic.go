@@ -1,6 +1,9 @@
 package main
 
-import "github.com/fogleman/gg"
+import (
+	"github.com/wildberries-ru/gg"
+	"golang.org/x/image/draw"
+)
 
 func main() {
 	const S = 1000
@@ -47,8 +50,8 @@ func main() {
 	dc.Stroke()
 
 	dc.LoadFontFace("/Library/Fonts/Arial.ttf", 200)
-	dc.DrawStringAnchored("g", -5, 5, 0.5, 0.5)
-	dc.DrawStringAnchored("G", 5, -5, 0.5, 0.5)
+	dc.DrawStringAnchored("g", -5, 5, 0.5, 0.5, draw.BiLinear)
+	dc.DrawStringAnchored("G", 5, -5, 0.5, 0.5, draw.BiLinear)
 
 	dc.SavePNG("out.png")
 }

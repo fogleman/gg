@@ -1,3 +1,4 @@
+//go:build ignore
 // +build ignore
 
 package main
@@ -5,7 +6,7 @@ package main
 import (
 	"image/color"
 
-	"github.com/fogleman/gg"
+	"github.com/wildberries-ru/gg"
 )
 
 func main() {

@@ -1,6 +1,9 @@
 package main
 
-import "github.com/fogleman/gg"
+import (
+	"github.com/wildberries-ru/gg"
+	"golang.org/x/image/draw"
+)
 
 func main() {
 	const S = 1024
@@ -21,10 +24,10 @@ func main() {
 			}
 			x := S/2 + float64(dx)
 			y := S/2 + float64(dy)
-			dc.DrawStringAnchored(s, x, y, 0.5, 0.5)
+			dc.DrawStringAnchored(s, x, y, 0.5, 0.5, draw.BiLinear)
 		}
 	}
 	dc.SetRGB(1, 1, 1)
-	dc.DrawStringAnchored(s, S/2, S/2, 0.5, 0.5)
+	dc.DrawStringAnchored(s, S/2, S/2, 0.5, 0.5, draw.BiLinear)
 	dc.SavePNG("out.png")
 }

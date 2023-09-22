@@ -3,7 +3,8 @@ package main
 import (
 	"math/rand"
 
-	"github.com/fogleman/gg"
+	"github.com/wildberries-ru/gg"
+	"golang.org/x/image/draw"
 )
 
 func CreatePoints(n int) []gg.Point {
@@ -11,7 +12,7 @@ func CreatePoints(n int) []gg.Point {
 	for i := 0; i < n; i++ {
 		x := 0.5 + rand.NormFloat64()*0.1
 		y := x + rand.NormFloat64()*0.1
-		points[i] = gg.Point{x, y}
+		points[i] = gg.Point{X: x, Y: y}
 	}
 	return points
 }
@@ -57,10 +58,10 @@ func main() {
 	if err := dc.LoadFontFace("/Library/Fonts/Arial Bold.ttf", 24); err != nil {
 		panic(err)
 	}
-	dc.DrawStringAnchored("Chart Title", S/2, P/2, 0.5, 0.5)
+	dc.DrawStringAnchored("Chart Title", S/2, P/2, 0.5, 0.5, draw.BiLinear)
 	if err := dc.LoadFontFace("/Library/Fonts/Arial.ttf", 18); err != nil {
 		panic(err)
 	}
-	dc.DrawStringAnchored("X Axis Title", S/2, S-P/2, 0.5, 0.5)
-	dc.SavePNG("out.png")
+	dc.DrawStringAnchored("X Axis Title", S/2, S-P/2, 0.5, 0.5, draw.BiLinear)
+	_ = dc.SavePNG("out.png")
 }

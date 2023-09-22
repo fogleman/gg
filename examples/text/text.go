@@ -1,6 +1,9 @@
 package main
 
-import "github.com/fogleman/gg"
+import (
+	"github.com/wildberries-ru/gg"
+	"golang.org/x/image/draw"
+)
 
 func main() {
 	const S = 1024
@@ -11,6 +14,6 @@ func main() {
 	if err := dc.LoadFontFace("/Library/Fonts/Arial.ttf", 96); err != nil {
 		panic(err)
 	}
-	dc.DrawStringAnchored("Hello, world!", S/2, S/2, 0.5, 0.5)
+	dc.DrawStringAnchored("Hello, world!", S/2, S/2, 0.5, 0.5, draw.BiLinear)
 	dc.SavePNG("out.png")
 }

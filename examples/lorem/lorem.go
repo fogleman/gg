@@ -1,6 +1,9 @@
 package main
 
-import "github.com/fogleman/gg"
+import (
+	"github.com/wildberries-ru/gg"
+	"golang.org/x/image/draw"
+)
 
 var lines = []string{
 	"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod",
@@ -22,7 +25,7 @@ func main() {
 	const h = 24
 	for i, line := range lines {
 		y := H/2 - h*len(lines)/2 + i*h
-		dc.DrawStringAnchored(line, 400, float64(y), 0.5, 0.5)
+		dc.DrawStringAnchored(line, 400, float64(y), 0.5, 0.5, draw.BiLinear)
 	}
 	dc.SavePNG("out.png")
 }

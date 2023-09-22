@@ -1,6 +1,3 @@
-# github.com/fogleman/gg v1.3.0
-## explicit
-github.com/fogleman/gg
 # github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 ## explicit
 github.com/golang/freetype/raster

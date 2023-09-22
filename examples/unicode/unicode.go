@@ -1,6 +1,9 @@
 package main
 
-import "github.com/fogleman/gg"
+import (
+	"github.com/wildberries-ru/gg"
+	"golang.org/x/image/draw"
+)
 
 func main() {
 	const S = 4096 * 2
@@ -18,7 +21,7 @@ func main() {
 			i := r*256 + c
 			x := float64(c*T) + T/2
 			y := float64(r*T) + T/2
-			dc.DrawStringAnchored(string(rune(i)), x, y, 0.5, 0.5)
+			dc.DrawStringAnchored(string(rune(i)), x, y, 0.5, 0.5, draw.BiLinear)
 		}
 	}
 	dc.SavePNG("out.png")
