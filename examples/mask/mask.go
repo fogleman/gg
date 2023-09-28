@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/wildberries-ru/gg"
+	"golang.org/x/image/draw"
 )
 
 func main() {
@@ -15,6 +16,6 @@ func main() {
 	dc := gg.NewContext(512, 512)
 	dc.DrawRoundedRectangle(0, 0, 512, 512, 64)
 	dc.Clip()
-	dc.DrawImage(im, 0, 0)
-	dc.SavePNG("out.png")
+	dc.DrawImage(im, 0, 0, draw.BiLinear)
+	_ = dc.SavePNG("out.png")
 }

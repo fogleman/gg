@@ -1,6 +1,9 @@
 package main
 
-import "github.com/wildberries-ru/gg"
+import (
+	"github.com/wildberries-ru/gg"
+	"golang.org/x/image/draw"
+)
 
 func main() {
 	const S = 1024
@@ -14,7 +17,7 @@ func main() {
 		dc.Pop()
 	}
 	if im, err := gg.LoadImage("examples/gopher.png"); err == nil {
-		dc.DrawImageAnchored(im, S/2, S/2, 0.5, 0.5)
+		dc.DrawImageAnchored(im, S/2, S/2, 0.5, 0.5, draw.BiLinear)
 	}
-	dc.SavePNG("out.png")
+	_ = dc.SavePNG("out.png")
 }

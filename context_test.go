@@ -221,7 +221,7 @@ func TestDrawImage(t *testing.T) {
 	dc := NewContext(200, 200)
 	dc.SetRGB(0, 0, 0)
 	dc.Clear()
-	dc.DrawImage(src.Image(), 50, 50)
+	dc.DrawImage(src.Image(), 50, 50, draw.BiLinear)
 	_ = saveImage(dc, "TestDrawImage")
 	checkHash(t, dc, "282afbc134676722960b6bec21305b15")
 }

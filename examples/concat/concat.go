@@ -4,6 +4,7 @@ import (
 	"math"
 
 	"github.com/wildberries-ru/gg"
+	"golang.org/x/image/draw"
 )
 
 func main() {
@@ -24,7 +25,7 @@ func main() {
 	height := s1.Y + s2.Y
 
 	dc := gg.NewContext(width, height)
-	dc.DrawImage(im1, 0, 0)
-	dc.DrawImage(im2, 0, s1.Y)
-	dc.SavePNG("out.png")
+	dc.DrawImage(im1, 0, 0, draw.BiLinear)
+	dc.DrawImage(im2, 0, s1.Y, draw.BiLinear)
+	_ = dc.SavePNG("out.png")
 }

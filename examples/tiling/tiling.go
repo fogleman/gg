@@ -1,6 +1,9 @@
 package main
 
-import "github.com/wildberries-ru/gg"
+import (
+	"github.com/wildberries-ru/gg"
+	"golang.org/x/image/draw"
+)
 
 func main() {
 	const NX = 4
@@ -14,8 +17,8 @@ func main() {
 	dc := gg.NewContext(w*NX, h*NY)
 	for y := 0; y < NY; y++ {
 		for x := 0; x < NX; x++ {
-			dc.DrawImage(im, x*w, y*h)
+			dc.DrawImage(im, x*w, y*h, draw.BiLinear)
 		}
 	}
-	dc.SavePNG("out.png")
+	_ = dc.SavePNG("out.png")
 }

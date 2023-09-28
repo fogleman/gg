@@ -1,6 +1,9 @@
 package main
 
-import "github.com/wildberries-ru/gg"
+import (
+	"github.com/wildberries-ru/gg"
+	"golang.org/x/image/draw"
+)
 
 func main() {
 	const W = 400
@@ -21,7 +24,7 @@ func main() {
 	dc.SetLineWidth(2)
 	dc.DrawRectangle(100, 210, float64(iw), float64(ih))
 	dc.Stroke()
-	dc.DrawImage(im, 100, 210)
+	dc.DrawImage(im, 100, 210, draw.BiLinear)
 	// draw image with current matrix applied
 	dc.SetHexColor("#0000ff")
 	dc.SetLineWidth(2)
@@ -29,6 +32,6 @@ func main() {
 	dc.DrawRectangle(100, 0, float64(iw), float64(ih)/2+20.0)
 	dc.StrokePreserve()
 	dc.Clip()
-	dc.DrawImageAnchored(im, 100, 0, 0.0, 0.0)
-	dc.SavePNG("out.png")
+	dc.DrawImageAnchored(im, 100, 0, 0.0, 0.0, draw.BiLinear)
+	_ = dc.SavePNG("out.png")
 }
