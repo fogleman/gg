@@ -21,8 +21,8 @@ import (
 type LineCap int
 
 const (
-	LineCapRound LineCap = iota
-	LineCapButt
+	LineCapButt LineCap = iota
+	LineCapRound
 	LineCapSquare
 )
 
